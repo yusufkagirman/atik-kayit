@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f3f27">
+<title>ATİK Ekip Raporu</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="stil.css?v=1">
+<script src="config.js?v=1"></script>
+</head>
+<body>
+<header class="bas-serit"><div class="bas-ic"><img src="logo.png" alt="ATİK"><div><small id="selam">ATİK Ekip Takip</small><b id="ekipAd">Yükleniyor…</b></div></div></header>
+<main class="sayfa">
+  <div id="hata" class="kart" hidden><div class="kutu-hata" id="hataMetin"></div></div>
+
+  <!-- ANA -->
+  <section id="ana" hidden>
+    <div class="sayilar">
+      <div class="sayi"><b id="sFaal">0</b><span>Bu ay faaliyet</span></div>
+      <div class="sayi"><b id="sKat">0</b><span>Bu ay katılım</span></div>
+      <div class="sayi"><b id="sHar">0 ₺</b><span>Bu ay harcama</span></div>
+    </div>
+    <button class="btn ana tam" id="yeniBtn" style="min-height:58px;font-size:17px;margin-bottom:14px">＋ Yeni faaliyet raporu</button>
+    <div class="kart">
+      <h2>Raporlarım <small id="gunlerYazi"></small></h2>
+      <div id="raporListe"></div>
+    </div>
+    <div class="kart">
+      <h2>Ekip üyelerim <small id="uyeSay"></small></h2>
+      <div style="display:flex;gap:8px"><input id="uyeAdAna" placeholder="Ad Soyad" maxlength="80"><button class="btn ana" id="uyeEkleAna">Ekle</button></div>
+      <div id="uyeListeAna" class="cipler" style="margin-top:12px"></div>
+      <p class="not">Liste bir kez kurulur; raporda katılanları tek dokunuşla işaretlersin.</p>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section id="form" hidden>
+    <div class="kart">
+      <h2 id="formBaslik">Yeni faaliyet</h2>
+      <div class="iki">
+        <div class="alan"><label class="et" for="fTarih">Tarih</label><input type="date" id="fTarih"></div>
+        <div class="alan"><label class="et" for="fSure">Süre (dakika)</label><input type="number" id="fSure" inputmode="numeric" min="0" max="1440" placeholder="90"></div>
+      </div>
+      <div class="alan"><label class="et">Faaliyet türü</label>
+        <div class="cipler" id="turCip"></div>
+        <input id="fTur" maxlength="120" placeholder="ya da kendin yaz" style="margin-top:8px">
+      </div>
+      <div class="alan"><label class="et" for="fYer">Yer</label><input id="fYer" maxlength="160" placeholder="Örn. Dernek merkezi, Avcılar sahil"></div>
+      <div class="alan"><label class="et" for="fOzet">Ne yaptınız?</label><textarea id="fOzet" maxlength="4000" placeholder="Kısaca anlat: konu, program, öne çıkan an…"></textarea></div>
+    </div>
+
+    <div class="kart">
+      <h2>Kimler geldi? <small id="katSay">0 kişi</small></h2>
+      <div style="display:flex;gap:8px;margin-bottom:10px"><input id="uyeAra" placeholder="Ara…"><button class="btn kucuk" id="tumunuSec" type="button">Tümü</button></div>
+      <div class="uye-liste" id="uyeSecim"></div>
+      <div style="display:flex;gap:8px;margin-top:10px"><input id="uyeAdForm" placeholder="Listede yok mu? Ad Soyad ekle" maxlength="80"><button class="btn" id="uyeEkleForm" type="button">Ekle</button></div>
+      <div class="alan" style="margin-top:14px"><label class="et" for="fEk">Listede olmayan misafir sayısı</label><input type="number" id="fEk" inputmode="numeric" min="0" max="500" value="0"></div>
+      <div class="toplam-satir"><span>Toplam katılım</span><b id="katToplam">0</b></div>
+    </div>
+
+    <div class="kart">
+      <h2>İkram ve harcama</h2>
+      <div class="alan"><label class="et" for="fIkram">Ne ikram edildi?</label><input id="fIkram" maxlength="500" placeholder="Örn. çay, simit, pizza" list="ikramOneri"><datalist id="ikramOneri"></datalist></div>
+      <label class="et">Harcamalar</label>
+      <div id="harcamalar"></div>
+      <button class="btn kucuk" id="harcamaEkle" type="button">＋ Harcama kalemi</button>
+      <div class="toplam-satir"><span>Toplam harcama</span><b id="harToplam">0 ₺</b></div>
+    </div>
+
+    <div class="kart">
+      <h2>Fotoğraf ve video</h2>
+      <label class="yukle-kutu" for="fFoto">📷 Fotoğraf ekle</label>
+      <input type="file" id="fFoto" accept="image/*" multiple hidden>
+      <div class="fotolar" id="fotolar"></div>
+      <div class="alan" style="margin-top:14px"><label class="et" for="fVideo">Video linkleri</label><textarea id="fVideo" style="min-height:70px" placeholder="YouTube, Google Drive ya da Instagram linki; her satıra bir tane"></textarea>
+        <p class="not">Videoyu Drive'a yükleyip "bağlantıya sahip herkes" ile paylaştığın linki buraya yapıştır.</p></div>
+    </div>
+    <button class="btn sil tam" id="taslakSil" type="button" hidden>Bu taslağı sil</button>
+  </section>
+
+  <!-- BAŞARI -->
+  <section id="basari" hidden>
+    <div class="kart basari"><div class="isaret">✓</div><h2>Rapor gönderildi</h2><p style="color:var(--ink2)">Emeğine sağlık. Yönetim raporu gördü.</p><button class="btn ana" id="anaDon">Ana sayfaya dön</button></div>
+  </section>
+</main>
+
+<div class="alt-cubuk" id="formCubuk" hidden><div>
+  <button class="btn" id="vazgec" type="button" style="flex:0 0 auto">←</button>
+  <button class="btn" id="taslakKaydet" type="button">Taslak</button>
+  <button class="btn ana" id="gonder" type="button">Gönder</button>
+</div></div>
+<div class="bildirim" id="bildirim" hidden></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const TOKEN = new URLSearchParams(location.search).get('k') || '';
+const GUN = ['', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+const AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+const TURLER = ['Sohbet', 'Spor', 'Gezi', 'Okuma / Ders', 'Kamp', 'Ziyaret', 'Yardım', 'Eğlence'];
+const HATALAR = {gecersiz_link: 'Bu link geçersiz ya da kapatılmış. Yönetimden yeni link iste.', tarih_gecersiz: 'Tarih geçersiz (en fazla 120 gün geriye girilebilir).', tutar_gecersiz: 'Harcama tutarı geçersiz.', ad_gecersiz: 'Ad geçersiz.', rapor_yok: 'Rapor bulunamadı.'};
+let V = null, duzenlenen = null, secili = new Set(), medya = [], onizleme = {}, kirli = false, yukleniyor = 0;
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const tl = n => Number(n || 0).toLocaleString('tr-TR', {maximumFractionDigits: 2}) + ' ₺';
+const bugun = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+
+function bildir(m, hata) { const b = $('bildirim'); b.textContent = m; b.className = 'bildirim' + (hata ? ' hata' : ''); b.hidden = false; clearTimeout(b._t); b._t = setTimeout(() => b.hidden = true, 3200); }
+
+async function rpc(f, body) {
+  const r = await fetch(CFG.URL + '/rest/v1/rpc/' + f, {method: 'POST', headers: {apikey: CFG.ANON, Authorization: 'Bearer ' + CFG.ANON, 'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(HATALAR[j?.message] || 'Bir sorun oldu, tekrar dene. (' + (j?.message || r.status) + ')');
+  return j;
+}
+
+function goster(id) {
+  for (const s of ['ana', 'form', 'basari']) $(s).hidden = s !== id;
+  $('formCubuk').hidden = id !== 'form';
+  scrollTo(0, 0);
+}
+
+async function yukle() {
+  if (!TOKEN) return hataGoster('Link eksik. Yönetimin gönderdiği kişisel linki kullan.');
+  try { V = await rpc('lider_bilgi', {t: TOKEN}); } catch (e) { return hataGoster(e.message); }
+  $('ekipAd').textContent = V.ekip.ad;
+  $('selam').textContent = V.ekip.lider_ad ? 'Selam ' + V.ekip.lider_ad.split(' ')[0] + ' 👋' : 'ATİK Ekip Takip';
+  $('gunlerYazi').textContent = V.ekip.gunler.length ? '· ' + V.ekip.gunler.map(g => GUN[g]).join(', ') : '';
+  anaCiz();
+}
+function hataGoster(m) { $('hata').hidden = false; $('hataMetin').textContent = m; $('ekipAd').textContent = 'ATİK Ekip Takip'; }
+
+function anaCiz() {
+  const ay = bugun().slice(0, 7), buAy = V.raporlar.filter(r => r.durum === 'gonderildi' && r.tarih.startsWith(ay));
+  $('sFaal').textContent = buAy.length;
+  $('sKat').textContent = buAy.reduce((a, r) => a + r.katilim, 0);
+  $('sHar').textContent = tl(buAy.reduce((a, r) => a + Number(r.toplam), 0));
+  $('raporListe').innerHTML = V.raporlar.length ? V.raporlar.map(r => {
+    const [y, m, d] = r.tarih.split('-'), foto = r.medya.filter(x => x.t === 'foto').length;
+    return `<div class="liste-oge" data-id="${r.id}"><div class="tarih"><b>${+d}</b><small>${AY[m - 1]}</small></div>
+      <div class="govde"><b>${esc(r.tur || 'Faaliyet')}${r.yer ? ' · ' + esc(r.yer) : ''}</b><span>${r.katilim} kişi · ${tl(r.toplam)}${foto ? ' · 📷 ' + foto : ''}</span></div>
+      ${r.durum === 'taslak' ? '<span class="rozet taslak">Taslak</span>' : '<span class="rozet">✓</span>'}</div>`;
+  }).join('') : '<div class="bos">Henüz rapor yok. İlk faaliyetini ekle!</div>';
+  $('uyeSay').textContent = V.uyeler.length + ' kişi';
+  $('uyeListeAna').innerHTML = V.uyeler.map(u => `<span class="cip" data-id="${u.id}">${esc(u.ad)} <span style="color:var(--hata);margin-left:4px" title="Çıkar">×</span></span>`).join('') || '<span class="not">Henüz üye eklenmedi.</span>';
+  const ikramlar = [...new Set(V.raporlar.map(r => r.ikram).filter(Boolean))];
+  $('ikramOneri').innerHTML = ikramlar.map(i => `<option value="${esc(i)}">`).join('');
+  goster('ana');
+}
+
+$('raporListe').onclick = e => { const o = e.target.closest('.liste-oge'); if (o) formAc(V.raporlar.find(r => r.id === o.dataset.id)); };
+$('uyeListeAna').onclick = async e => {
+  const c = e.target.closest('.cip'); if (!c) return;
+  const u = V.uyeler.find(x => x.id === c.dataset.id);
+  if (!confirm(u.ad + ' listeden çıkarılsın mı? (Eski raporlar etkilenmez)')) return;
+  try { await rpc('lider_uye_sil', {t: TOKEN, id_: u.id}); V.uyeler = V.uyeler.filter(x => x.id !== u.id); anaCiz(); } catch (er) { bildir(er.message, 1); }
+};
+async function uyeEkle(inp) {
+  const ad = inp.value.trim(); if (!ad) return null;
+  try { const id = await rpc('lider_uye_ekle', {t: TOKEN, ad_: ad}); V.uyeler.push({id, ad}); V.uyeler.sort((a, b) => a.ad.localeCompare(b.ad, 'tr')); inp.value = ''; return id; }
+  catch (er) { bildir(er.message, 1); return null; }
+}
+$('uyeEkleAna').onclick = async () => { if (await uyeEkle($('uyeAdAna'))) anaCiz(); };
+$('uyeAdAna').onkeydown = e => { if (e.key === 'Enter') $('uyeEkleAna').click(); };
+$('uyeEkleForm').onclick = async () => { const id = await uyeEkle($('uyeAdForm')); if (id) { secili.add(id); uyeCiz(); kirli = true; } };
+$('uyeAdForm').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('uyeEkleForm').click(); } };
+
+// ---------- FORM ----------
+$('turCip').innerHTML = TURLER.map(t => `<button type="button" class="cip">${t}</button>`).join('');
+$('turCip').onclick = e => { const c = e.target.closest('.cip'); if (!c) return; $('fTur').value = c.textContent; turCiz(); kirli = true; };
+$('fTur').oninput = turCiz;
+function turCiz() { for (const c of $('turCip').children) c.classList.toggle('secili', c.textContent === $('fTur').value); }
+
+function formAc(r) {
+  duzenlenen = r || null;
+  $('formBaslik').textContent = r ? (r.durum === 'taslak' ? 'Taslağı tamamla' : 'Raporu düzenle') : 'Yeni faaliyet';
+  $('fTarih').value = r?.tarih || bugun();
+  $('fTarih').max = bugun();
+  $('fSure').value = r?.sure_dk ?? '';
+  $('fTur').value = r?.tur || '';
+  $('fYer').value = r?.yer || (V.raporlar[0]?.yer ?? '');
+  $('fOzet').value = r?.ozet || '';
+  $('fIkram').value = r?.ikram || '';
+  $('fEk').value = r?.ek_katilimci || 0;
+  secili = new Set(r?.katilanlar || []);
+  medya = (r?.medya || []).filter(m => m.t === 'foto');
+  $('fVideo').value = (r?.medya || []).filter(m => m.t === 'video').map(m => m.url).join('\n');
+  $('harcamalar').innerHTML = '';
+  (r?.harcama?.length ? r.harcama : [{kalem: '', tutar: ''}]).forEach(h => harcamaSatir(h));
+  $('uyeAra').value = '';
+  $('taslakSil').hidden = !(r && r.durum === 'taslak');
+  turCiz(); uyeCiz(); harToplam(); fotoCiz();
+  kirli = false;
+  goster('form');
+}
+$('yeniBtn').onclick = () => formAc(null);
+
+function uyeCiz() {
+  const q = $('uyeAra').value.trim().toLocaleLowerCase('tr');
+  $('uyeSecim').innerHTML = V.uyeler.filter(u => !q || u.ad.toLocaleLowerCase('tr').includes(q)).map(u =>
+    `<label class="uye${secili.has(u.id) ? ' secili' : ''}"><input type="checkbox" value="${u.id}"${secili.has(u.id) ? ' checked' : ''}>${esc(u.ad)}</label>`).join('')
+    || `<div class="not" style="grid-column:1/-1">${V.uyeler.length ? 'Eşleşen yok.' : 'Üye listen boş. Aşağıdan isim ekleyebilir ya da yalnız misafir sayısını girebilirsin.'}</div>`;
+  katToplam();
+}
+$('uyeSecim').onchange = e => { const id = e.target.value; e.target.checked ? secili.add(id) : secili.delete(id); e.target.parentElement.classList.toggle('secili', e.target.checked); katToplam(); kirli = true; };
+$('uyeAra').oninput = uyeCiz;
+$('tumunuSec').onclick = () => { const hepsi = V.uyeler.every(u => secili.has(u.id)); V.uyeler.forEach(u => hepsi ? secili.delete(u.id) : secili.add(u.id)); uyeCiz(); kirli = true; };
+$('fEk').oninput = katToplam;
+function katToplam() { const t = secili.size + (parseInt($('fEk').value) || 0); $('katToplam').textContent = t; $('katSay').textContent = t + ' kişi'; }
+
+function harcamaSatir(h) {
+  const d = document.createElement('div'); d.className = 'harcama-satir';
+  d.innerHTML = `<input placeholder="Kalem (örn. simit)" maxlength="80" value="${esc(h.kalem)}"><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="₺" value="${esc(h.tutar)}"><button type="button" class="x" title="Sil">×</button>`;
+  d.querySelector('.x').onclick = () => { d.remove(); harToplam(); kirli = true; };
+  $('harcamalar').append(d);
+}
+$('harcamaEkle').onclick = () => { harcamaSatir({kalem: '', tutar: ''}); $('harcamalar').lastChild.querySelector('input').focus(); };
+$('harcamalar').oninput = () => { harToplam(); kirli = true; };
+function harcamaOku() { return [...$('harcamalar').children].map(d => { const [k, t] = d.querySelectorAll('input'); return {kalem: k.value.trim(), tutar: Number(t.value) || 0}; }).filter(h => h.kalem || h.tutar); }
+function harToplam() { $('harToplam').textContent = tl(harcamaOku().reduce((a, h) => a + h.tutar, 0)); }
+
+// Fotoğraf: tarayıcıda 1600px'e küçült, özel kovaya yükle (lider geri okuyamaz; yönetici görür)
+function kucult(f) {
+  return new Promise((ok, red) => {
+    const img = new Image(); img.onload = () => {
+      const s = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(img.src);
+      c.toBlob(b => b ? ok(b) : red(new Error('Fotoğraf okunamadı')), 'image/jpeg', .82);
+    }; img.onerror = () => red(new Error('Fotoğraf okunamadı')); img.src = URL.createObjectURL(f);
+  });
+}
+$('fFoto').onchange = async e => {
+  const dosyalar = [...e.target.files]; e.target.value = '';
+  if (medya.length + dosyalar.length > 30) return bildir('Bir rapora en fazla 30 fotoğraf eklenir.', 1);
+  for (const f of dosyalar) {
+    const yol = bugun().slice(0, 7) + '/' + crypto.randomUUID() + '.jpg';
+    medya.push({t: 'foto', yol}); onizleme[yol] = 'yukleniyor'; fotoCiz(); yukleniyor++;
+    try {
+      const b = await kucult(f);
+      const r = await fetch(CFG.URL + '/storage/v1/object/rapor-medya/' + yol, {method: 'POST', headers: {apikey: CFG.ANON, Authorization: 'Bearer ' + CFG.ANON, 'Content-Type': 'image/jpeg'}, body: b});
+      if (!r.ok) throw new Error('Yükleme başarısız');
+      onizleme[yol] = URL.createObjectURL(b); kirli = true;
+    } catch (er) { medya = medya.filter(m => m.yol !== yol); bildir(er.message, 1); }
+    yukleniyor--; fotoCiz();
+  }
+};
+function fotoCiz() {
+  $('fotolar').innerHTML = medya.map((m, i) => {
+    const o = onizleme[m.yol];
+    return o === 'yukleniyor' ? '<div>Yükleniyor…</div>' : `<div style="${o ? `background-image:url(${o})` : ''}">${o ? '' : '📷 Yüklendi'}<button type="button" data-i="${i}" title="Kaldır">×</button></div>`;
+  }).join('');
+}
+$('fotolar').onclick = e => { const b = e.target.closest('button'); if (b) { medya.splice(+b.dataset.i, 1); fotoCiz(); kirli = true; } };
+
+async function kaydet(durum) {
+  if (yukleniyor) return bildir('Fotoğraflar yükleniyor, birazdan tekrar dene.', 1);
+  const videolar = $('fVideo').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (videolar.some(v => !/^https?:\/\//i.test(v))) return bildir('Video linkleri http ile başlamalı.', 1);
+  const d = {tarih: $('fTarih').value, tur: $('fTur').value.trim(), yer: $('fYer').value.trim(), sure_dk: $('fSure').value, ozet: $('fOzet').value.trim(), ikram: $('fIkram').value.trim(),
+    katilanlar: [...secili], ek_katilimci: parseInt($('fEk').value) || 0, harcama: harcamaOku(), medya: [...medya, ...videolar.map(url => ({t: 'video', url}))], durum};
+  if (!d.tarih) return bildir('Tarih seç.', 1);
+  if (durum === 'gonderildi') {
+    if (!d.tur) return bildir('Faaliyet türünü seç ya da yaz.', 1);
+    if (!d.ozet) return bildir('"Ne yaptınız?" kısmını doldur.', 1);
+    if (secili.size + d.ek_katilimci === 0) return bildir('Katılımcıları işaretle ya da misafir sayısını gir.', 1);
+    if (d.harcama.some(h => !h.kalem)) return bildir('Her harcamaya bir kalem adı yaz.', 1);
+  }
+  for (const b of ['gonder', 'taslakKaydet']) $(b).disabled = true;
+  try {
+    await rpc('lider_rapor_kaydet', {t: TOKEN, rid: duzenlenen?.id || null, d});
+    kirli = false;
+    V = await rpc('lider_bilgi', {t: TOKEN});
+    if (durum === 'gonderildi') goster('basari'); else { bildir('Taslak kaydedildi'); anaCiz(); }
+  } catch (er) { bildir(er.message, 1); }
+  for (const b of ['gonder', 'taslakKaydet']) $(b).disabled = false;
+}
+$('gonder').onclick = () => kaydet('gonderildi');
+$('taslakKaydet').onclick = () => kaydet('taslak');
+$('vazgec').onclick = () => { if (!kirli || confirm('Kaydedilmemiş değişiklikler silinsin mi?')) { kirli = false; anaCiz(); } };
+$('anaDon').onclick = anaCiz;
+$('taslakSil').onclick = async () => {
+  if (!confirm('Taslak silinsin mi?')) return;
+  try { await rpc('lider_rapor_sil', {t: TOKEN, rid: duzenlenen.id}); V = await rpc('lider_bilgi', {t: TOKEN}); kirli = false; anaCiz(); bildir('Taslak silindi'); } catch (er) { bildir(er.message, 1); }
+};
+for (const id of ['fTarih', 'fSure', 'fYer', 'fOzet', 'fIkram', 'fVideo', 'fTur']) $(id).addEventListener('input', () => kirli = true);
+addEventListener('beforeunload', e => { if (kirli) { e.preventDefault(); e.returnValue = ''; } });
+yukle();
+</script>
+</body>
+</html>

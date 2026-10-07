@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f3f27">
+<title>ATİK Ekip Yönetimi</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="stil.css?v=1">
+<script src="config.js?v=1"></script>
+<style>
+.bas-ic,.sayfa{max-width:1100px}
+.bas-ic{justify-content:space-between}.bas-ic>div{display:flex;align-items:center;gap:12px}
+.bas-ic .btn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.25)}
+.sayfa.dar{max-width:420px}
+.sekme-cubuk{max-width:520px}
+.sayilar{grid-template-columns:repeat(4,1fr)}
+.arac{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.arac select,.arac input{width:auto;min-height:40px;font-size:14px}
+.arac .bosluk{flex:1}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.s,th.s{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.tablo-sar{overflow-x:auto}
+.cubuk{height:8px;border-radius:99px;background:var(--g50);min-width:80px}.cubuk i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--g600),var(--g700))}
+.trend{display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:10px}
+.trend div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;font-size:12px;color:var(--ink3);font-weight:700}
+.trend i{display:block;width:100%;max-width:46px;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,var(--g600),var(--g700));min-height:3px}
+.trend b{color:var(--ink);font-size:13px}
+.uyari-liste{display:flex;flex-wrap:wrap;gap:8px}
+.izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.rapor-kart{cursor:pointer;transition:transform .12s}.rapor-kart:hover{transform:translateY(-2px)}
+.rapor-kart .ust{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
+.rapor-kart p{margin:6px 0 10px;color:var(--ink2);font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rapor-kart .alt{display:flex;gap:14px;font-size:13px;color:var(--ink3);font-weight:700}
+dialog{border:0;border-radius:22px;padding:0;width:min(720px,calc(100% - 24px));max-height:calc(100% - 40px);box-shadow:0 30px 80px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(15,30,20,.5);backdrop-filter:blur(3px)}
+.dlg-ic{padding:22px}
+.dlg-ic h3{font-size:15px;margin:18px 0 8px;color:var(--ink2)}
+.foto-izgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.foto-izgara a{aspect-ratio:1;border-radius:12px;background:var(--g50) center/cover;display:block}
+.ekip-kart .gunler .cip{padding:5px 11px;font-size:13px}
+.link-kutu{display:flex;gap:8px;margin-top:10px}.link-kutu input{font-size:13px;min-height:38px;color:var(--ink3)}
+@media (max-width:760px){.sayilar{grid-template-columns:repeat(2,1fr)}.izgara{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="bas-serit"><div class="bas-ic"><div><img src="logo.png" alt="ATİK"><div><small>ATİK Derneği</small><b>Ekip Takip · Yönetim</b></div></div><button class="btn kucuk" id="cik" hidden>Çıkış</button></div></header>
+
+<main class="sayfa dar" id="giris">
+  <div class="kart">
+    <h2>Yönetici girişi</h2>
+    <div class="alan"><label class="et" for="em">E-posta</label><input id="em" type="email" autocomplete="username"></div>
+    <div class="alan"><label class="et" for="pw">Parola</label><input id="pw" type="password" autocomplete="current-password"></div>
+    <div id="ghata" style="margin-bottom:12px"></div>
+    <button class="btn ana tam" id="gb">Giriş</button>
+    <p class="not">Kayıt formu panelindeki hesabınla aynı.</p>
+  </div>
+</main>
+
+<main class="sayfa" id="panel" hidden>
+  <div class="sekme-cubuk"><button data-s="genel" class="secili">Genel bakış</button><button data-s="rapor">Raporlar</button><button data-s="ekip">Ekipler</button></div>
+
+  <!-- GENEL -->
+  <section id="v-genel">
+    <div class="arac">
+      <select id="donem"><option value="7">Son 7 gün</option><option value="30" selected>Son 30 gün</option><option value="ay">Bu ay</option><option value="90">Son 3 ay</option><option value="0">Tümü</option></select>
+      <select id="cinsSec"><option value="">Tüm ekipler</option><option value="kiz">Kız ekipleri</option><option value="erkek">Erkek ekipleri</option></select>
+      <span class="bosluk"></span><span class="not" id="guncel"></span>
+    </div>
+    <div class="sayilar">
+      <div class="sayi"><b id="kFaal">0</b><span>Faaliyet</span></div>
+      <div class="sayi"><b id="kKat">0</b><span>Toplam katılım</span></div>
+      <div class="sayi"><b id="kHar">0 ₺</b><span>Toplam harcama</span></div>
+      <div class="sayi"><b id="kEkip">0/0</b><span>Rapor veren ekip</span></div>
+    </div>
+    <div class="kart" id="uyariKart"><h2>Takip gerekenler <small>son çalışma gününün raporu gelmeyen ekipler</small></h2><div class="uyari-liste" id="uyari"></div></div>
+    <div class="kart"><h2>Haftalık katılım <small>son 8 hafta</small></h2><div class="trend" id="trend"></div></div>
+    <div class="kart"><h2>Ekip performansı</h2><div class="tablo-sar"><table>
+      <thead><tr><th>Ekip</th><th class="s">Faaliyet</th><th class="s">Katılım</th><th>Ort. katılım</th><th class="s">Harcama</th><th class="s">Kişi başı</th><th>Son rapor</th></tr></thead>
+      <tbody id="perf"></tbody></table></div></div>
+  </section>
+
+  <!-- RAPORLAR -->
+  <section id="v-rapor" hidden>
+    <div class="arac">
+      <select id="rEkip"></select>
+      <input type="date" id="rBas" title="Başlangıç"><input type="date" id="rBit" title="Bitiş">
+      <input id="rAra" placeholder="Ara…">
+      <label class="not" style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="rTaslak" style="width:18px;min-height:18px"> Taslakları göster</label>
+      <span class="bosluk"></span><button class="btn kucuk" id="csv">CSV indir</button>
+    </div>
+    <div class="izgara" id="raporlar"></div>
+  </section>
+
+  <!-- EKİPLER -->
+  <section id="v-ekip" hidden>
+    <div class="arac"><span class="not">Her ekibin kişisel linki liderine WhatsApp'tan gönderilir. Link kaybolursa "Yeni link" eskisini geçersiz kılar.</span><span class="bosluk"></span><button class="btn kucuk ana" id="ekipEkle">＋ Ekip ekle</button></div>
+    <div class="izgara" id="ekipler"></div>
+  </section>
+</main>
+
+<dialog id="dlg"><div class="dlg-ic" id="dlgIc"></div></dialog>
+<div class="bildirim" id="bildirim" hidden></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const GUN = ['', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const tl = n => Number(n || 0).toLocaleString('tr-TR', {maximumFractionDigits: 0}) + ' ₺';
+const yerel = d => { d = new Date(d); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const bugun = () => yerel(new Date());
+const gunOnce = n => { const d = new Date(); d.setDate(d.getDate() - n); return yerel(d); };
+const trTarih = s => new Date(s + 'T12:00').toLocaleDateString('tr-TR', {day: 'numeric', month: 'long', weekday: 'short'});
+const dizin = location.href.replace(/yonetim\.html.*$/, '');
+let tok = sessionStorage.getItem('tok'), ekipler = [], uyeler = [], raporlar = [];
+
+function bildir(m, hata) { const b = $('bildirim'); b.textContent = m; b.className = 'bildirim' + (hata ? ' hata' : ''); b.hidden = false; clearTimeout(b._t); b._t = setTimeout(() => b.hidden = true, 3000); }
+const H = () => ({apikey: CFG.ANON, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json'});
+const api = (yol, o = {}) => fetch(CFG.URL + '/rest/v1/' + yol, {cache: 'no-store', ...o, headers: {...H(), ...(o.headers || {})}}).then(async r => {
+  if (r.status === 401) { cikis(); throw new Error('Oturum süresi doldu, tekrar giriş yap.'); }
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || r.status);
+  return r.status === 204 ? null : r.json().catch(() => null);
+});
+
+/* ---------- giriş ---------- */
+$('gb').onclick = async () => {
+  const hata = m => $('ghata').innerHTML = '<div class="kutu-hata">' + esc(m) + '</div>';
+  $('ghata').innerHTML = '';
+  if (!$('em').value.trim() || !$('pw').value) return hata('E-posta ve parolayı yaz.');
+  $('gb').disabled = true;
+  try {
+    const r = await fetch(CFG.URL + '/auth/v1/token?grant_type=password', {method: 'POST', headers: {apikey: CFG.ANON, 'Content-Type': 'application/json'}, body: JSON.stringify({email: $('em').value.trim().toLowerCase(), password: $('pw').value})});
+    const j = await r.json();
+    if (!j.access_token) hata(j.error_code === 'invalid_credentials' ? 'E-posta ya da parola hatalı.' : 'Giriş yapılamadı: ' + (j.msg || r.status));
+    else { tok = j.access_token; sessionStorage.setItem('tok', tok); await ac(); }
+  } catch (e) { hata(e.message); }
+  $('gb').disabled = false;
+};
+$('pw').onkeydown = e => { if (e.key === 'Enter') $('gb').click(); };
+function cikis() { sessionStorage.removeItem('tok'); tok = null; $('panel').hidden = true; $('cik').hidden = true; $('giris').hidden = false; }
+$('cik').onclick = cikis;
+
+async function veriCek() {
+  [ekipler, uyeler, raporlar] = await Promise.all([
+    api('ekip?select=*&order=cins.asc,ad.asc'),
+    api('uye?select=id,ekip_id,ad,aktif'),
+    // ponytail: tek istekte en fazla 5000 rapor (12 ekip × haftada ~2 → yıllarca yeter); aşılırsa sayfalı çek
+    api('rapor?select=*&order=tarih.desc,olusturma.desc&limit=5000')]);
+  $('guncel').textContent = 'Son güncelleme ' + new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+}
+async function ac() {
+  $('giris').hidden = true; $('panel').hidden = false; $('cik').hidden = false;
+  await veriCek();
+  $('rEkip').innerHTML = '<option value="">Tüm ekipler</option><option value="kiz">Kız ekipleri</option><option value="erkek">Erkek ekipleri</option>' + ekipler.map(e => `<option value="${e.id}">${esc(e.ad)}</option>`).join('');
+  hepsiCiz();
+}
+function hepsiCiz() { genelCiz(); raporCiz(); ekipCiz(); }
+setInterval(async () => { if (tok && !$('dlg').open && document.visibilityState === 'visible' && !document.activeElement?.closest('#v-ekip')) { await veriCek().catch(() => {}); genelCiz(); raporCiz(); } }, 60000);
+
+/* ---------- sekmeler ---------- */
+document.querySelector('.sekme-cubuk').onclick = e => {
+  const s = e.target.dataset.s; if (!s) return;
+  for (const b of e.currentTarget.children) b.classList.toggle('secili', b === e.target);
+  for (const v of ['genel', 'rapor', 'ekip']) $('v-' + v).hidden = v !== s;
+};
+
+const ekipAd = id => ekipler.find(e => e.id === id)?.ad || '?';
+const gonderilen = () => raporlar.filter(r => r.durum === 'gonderildi');
+
+/* ---------- genel bakış ---------- */
+function donemBas() { const v = $('donem').value; return v === '0' ? '0000' : v === 'ay' ? bugun().slice(0, 8) + '01' : gunOnce(+v - 1); }
+$('donem').onchange = $('cinsSec').onchange = genelCiz;
+function genelCiz() {
+  const bas = donemBas(), cins = $('cinsSec').value;
+  const ek = ekipler.filter(e => e.aktif && (!cins || e.cins === cins)), ekIds = new Set(ek.map(e => e.id));
+  const rs = gonderilen().filter(r => ekIds.has(r.ekip_id) && r.tarih >= bas);
+  $('kFaal').textContent = rs.length;
+  $('kKat').textContent = rs.reduce((a, r) => a + r.katilim, 0);
+  $('kHar').textContent = tl(rs.reduce((a, r) => a + Number(r.toplam), 0));
+  $('kEkip').textContent = new Set(rs.map(r => r.ekip_id)).size + '/' + ek.length;
+
+  const son = {};
+  for (const r of gonderilen()) if (!son[r.ekip_id] || r.tarih > son[r.ekip_id]) son[r.ekip_id] = r.tarih;
+  const gec = e => !son[e.id] || son[e.id] < beklenen(e);
+  const geciken = ek.filter(gec);
+  $('uyariKart').hidden = !geciken.length;
+  $('uyari').innerHTML = geciken.map(e => `<span class="rozet kirmizi" title="${esc(e.lider_ad)}">${esc(e.ad)} · ${son[e.id] ? gunFark(son[e.id]) : 'hiç rapor yok'}</span>`).join('');
+
+  // son 8 hafta (pazartesi başlangıçlı)
+  const pzt = new Date(); pzt.setDate(pzt.getDate() - (pzt.getDay() + 6) % 7);
+  const haftalar = [...Array(8)].map((_, i) => { const d = new Date(pzt); d.setDate(d.getDate() - 7 * (7 - i)); return yerel(d); });
+  const top = haftalar.map((h, i) => gonderilen().filter(r => ekIds.has(r.ekip_id) && r.tarih >= h && (i === 7 || r.tarih < haftalar[i + 1])).reduce((a, r) => a + r.katilim, 0));
+  const mx = Math.max(1, ...top);
+  $('trend').innerHTML = top.map((t, i) => `<div><b>${t}</b><i style="height:${t / mx * 100}%"></i>${new Date(haftalar[i] + 'T12:00').toLocaleDateString('tr-TR', {day: 'numeric', month: 'short'})}</div>`).join('');
+
+  const satir = ek.map(e => { const r = rs.filter(x => x.ekip_id === e.id), k = r.reduce((a, x) => a + x.katilim, 0), h = r.reduce((a, x) => a + Number(x.toplam), 0); return {e, n: r.length, k, h, ort: r.length ? k / r.length : 0}; }).sort((a, b) => b.k - a.k);
+  const mxo = Math.max(1, ...satir.map(s => s.ort));
+  $('perf').innerHTML = satir.map(s => `<tr><td><b>${esc(s.e.ad)}</b><div class="not" style="margin:0">${esc(s.e.lider_ad || 'lider adı yok')}${s.e.gunler.length ? ' · ' + s.e.gunler.map(g => GUN[g]).join(', ') : ''}</div></td>
+    <td class="s">${s.n}</td><td class="s">${s.k}</td><td><div style="display:flex;align-items:center;gap:8px"><div class="cubuk" style="flex:1"><i style="width:${s.ort / mxo * 100}%"></i></div><b>${s.ort.toFixed(1)}</b></div></td>
+    <td class="s">${tl(s.h)}</td><td class="s">${s.k ? tl(s.h / s.k) : '-'}</td>
+    <td>${son[s.e.id] ? `<span class="rozet${gec(s.e) ? ' kirmizi' : ''}">${gunFark(son[s.e.id])}</span>` : '<span class="rozet gri">yok</span>'}</td></tr>`).join('');
+}
+// Beklenen son faaliyet: dünden geriye ekibin en yakın çalışma günü (bugünün raporu henüz gelmemiş olabilir). Gün seçilmemişse son 7 gün.
+function beklenen(e) {
+  if (!e.gunler.length) return gunOnce(6);
+  for (let i = 1; i <= 7; i++) { const d = new Date(); d.setDate(d.getDate() - i); if (e.gunler.includes(d.getDay() || 7)) return yerel(d); }
+}
+function gunFark(t) { const n = Math.round((new Date(bugun()) - new Date(t)) / 864e5); return n === 0 ? 'bugün' : n === 1 ? 'dün' : n + ' gün önce'; }
+
+/* ---------- raporlar ---------- */
+for (const id of ['rEkip', 'rBas', 'rBit', 'rTaslak']) $(id).onchange = raporCiz;
+$('rAra').oninput = raporCiz;
+function filtreli() {
+  const f = $('rEkip').value, q = $('rAra').value.trim().toLocaleLowerCase('tr');
+  const cinsi = id => ekipler.find(e => e.id === id)?.cins;
+  return raporlar.filter(r => ($('rTaslak').checked || r.durum === 'gonderildi')
+    && (!f || r.ekip_id === f || cinsi(r.ekip_id) === f)
+    && (!$('rBas').value || r.tarih >= $('rBas').value) && (!$('rBit').value || r.tarih <= $('rBit').value)
+    && (!q || [r.tur, r.yer, r.ozet, r.ikram, ekipAd(r.ekip_id)].join(' ').toLocaleLowerCase('tr').includes(q)));
+}
+function raporCiz() {
+  const rs = filtreli();
+  $('raporlar').innerHTML = rs.map(r => { const foto = r.medya.filter(m => m.t === 'foto').length, vid = r.medya.filter(m => m.t === 'video').length;
+    return `<div class="kart rapor-kart" data-id="${r.id}"><div class="ust"><b>${esc(ekipAd(r.ekip_id))}</b>${r.durum === 'taslak' ? '<span class="rozet taslak">Taslak</span>' : `<span class="not" style="margin:0">${trTarih(r.tarih)}</span>`}</div>
+      <div style="font-weight:700">${esc(r.tur || 'Faaliyet')}${r.yer ? ' · ' + esc(r.yer) : ''}</div><p>${esc(r.ozet) || '<i>Açıklama yok</i>'}</p>
+      <div class="alt"><span>👥 ${r.katilim}</span><span>💰 ${tl(r.toplam)}</span>${foto ? `<span>📷 ${foto}</span>` : ''}${vid ? `<span>🎬 ${vid}</span>` : ''}</div></div>`; }).join('')
+    || '<div class="kart bos" style="grid-column:1/-1">Bu filtreyle rapor yok.</div>';
+}
+$('raporlar').onclick = e => { const k = e.target.closest('.rapor-kart'); if (k) detay(raporlar.find(r => r.id === k.dataset.id)); };
+
+async function detay(r) {
+  const ad = id => uyeler.find(u => u.id === id)?.ad || '(silinmiş üye)';
+  const fotolar = r.medya.filter(m => m.t === 'foto'), videolar = r.medya.filter(m => m.t === 'video');
+  $('dlgIc').innerHTML = `<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><span class="not" style="margin:0">${esc(ekipAd(r.ekip_id))} · ${trTarih(r.tarih)}${r.sure_dk ? ' · ' + r.sure_dk + ' dk' : ''}</span>
+      <h2 style="font-size:21px;margin-top:4px">${esc(r.tur || 'Faaliyet')}${r.yer ? ' · ' + esc(r.yer) : ''}</h2></div><button class="btn kucuk" id="kapat">Kapat</button></div>
+    ${r.durum === 'taslak' ? '<p><span class="rozet taslak">Taslak, henüz gönderilmedi</span></p>' : ''}
+    <h3>Ne yapıldı</h3><p style="white-space:pre-wrap;margin:0">${esc(r.ozet) || '-'}</p>
+    <h3>Katılım: ${r.katilim} kişi</h3><div class="cipler">${r.katilanlar.map(id => `<span class="cip" style="cursor:default">${esc(ad(id))}</span>`).join('')}${r.ek_katilimci ? `<span class="cip" style="cursor:default">+${r.ek_katilimci} misafir</span>` : ''}</div>
+    <h3>İkram</h3><p style="margin:0">${esc(r.ikram) || '-'}</p>
+    <h3>Harcama: ${tl(r.toplam)}</h3>${r.harcama.length ? `<table>${r.harcama.map(h => `<tr><td>${esc(h.kalem)}</td><td class="s">${Number(h.tutar).toLocaleString('tr-TR')} ₺</td></tr>`).join('')}</table>` : '<p style="margin:0">-</p>'}
+    ${fotolar.length ? `<h3>Fotoğraflar (${fotolar.length})</h3><div class="foto-izgara" id="dFoto">${fotolar.map(() => '<a></a>').join('')}</div>` : ''}
+    ${videolar.length ? `<h3>Videolar</h3>${videolar.map(v => `<div><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(v.url)}</a></div>`).join('')}` : ''}
+    <div style="display:flex;justify-content:flex-end;margin-top:22px"><button class="btn kucuk sil" id="rSil">Raporu sil</button></div>`;
+  $('dlg').showModal();
+  $('kapat').onclick = () => $('dlg').close();
+  $('rSil').onclick = async () => {
+    if (!confirm('Bu rapor kalıcı olarak silinsin mi?')) return;
+    try {
+      await api('rapor?id=eq.' + r.id, {method: 'DELETE'});
+      if (fotolar.length) await fetch(CFG.URL + '/storage/v1/object/rapor-medya', {method: 'DELETE', headers: H(), body: JSON.stringify({prefixes: fotolar.map(f => f.yol)})});
+      raporlar = raporlar.filter(x => x.id !== r.id); $('dlg').close(); genelCiz(); raporCiz(); bildir('Rapor silindi');
+    } catch (e) { bildir(e.message, 1); }
+  };
+  if (fotolar.length) {
+    try {
+      const s = await fetch(CFG.URL + '/storage/v1/object/sign/rapor-medya', {method: 'POST', headers: H(), body: JSON.stringify({expiresIn: 3600, paths: fotolar.map(f => f.yol)})}).then(x => x.json());
+      [...$('dFoto').children].forEach((a, i) => { if (s[i]?.signedURL) { const u = CFG.URL + '/storage/v1' + s[i].signedURL; a.href = u; a.target = '_blank'; a.style.backgroundImage = `url("${u}")`; } });
+    } catch { bildir('Fotoğraflar yüklenemedi', 1); }
+  }
+}
+$('dlg').onclick = e => { if (e.target === $('dlg')) $('dlg').close(); };
+
+$('csv').onclick = () => {
+  const ad = id => uyeler.find(u => u.id === id)?.ad || '';
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const satirlar = [['Ekip', 'Tarih', 'Durum', 'Tür', 'Yer', 'Süre (dk)', 'Ne yapıldı', 'Katılım', 'Katılanlar', 'Misafir', 'İkram', 'Harcama kalemleri', 'Toplam harcama (TL)', 'Fotoğraf', 'Video linkleri']]
+    .concat(filtreli().map(r => [ekipAd(r.ekip_id), r.tarih, r.durum, r.tur, r.yer, r.sure_dk, r.ozet, r.katilim, r.katilanlar.map(ad).join(', '), r.ek_katilimci, r.ikram,
+      r.harcama.map(h => h.kalem + ': ' + h.tutar).join('; '), r.toplam, r.medya.filter(m => m.t === 'foto').length, r.medya.filter(m => m.t === 'video').map(m => m.url).join(' ')]));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + satirlar.map(s => s.map(q).join(';')).join('\r\n')], {type: 'text/csv;charset=utf-8'}));
+  a.download = 'ekip-raporlari ' + new Date().toLocaleString('tr-TR').replace(/[:/]/g, '.') + '.csv'; a.click();
+};
+
+/* ---------- ekipler ---------- */
+const yeniToken = () => [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join('');
+function ekipCiz() {
+  $('ekipler').innerHTML = ekipler.map(e => { const link = dizin + 'lider.html?k=' + e.token, n = uyeler.filter(u => u.ekip_id === e.id && u.aktif).length;
+    return `<div class="kart ekip-kart" data-id="${e.id}" style="${e.aktif ? '' : 'opacity:.6'}">
+      <div class="iki"><div class="alan"><label class="et">Ekip adı</label><input data-f="ad" value="${esc(e.ad)}" maxlength="80"></div>
+        <div class="alan"><label class="et">Grup</label><select data-f="cins"><option value="kiz"${e.cins === 'kiz' ? ' selected' : ''}>Kız</option><option value="erkek"${e.cins === 'erkek' ? ' selected' : ''}>Erkek</option></select></div></div>
+      <div class="alan"><label class="et">Lider adı soyadı</label><input data-f="lider_ad" value="${esc(e.lider_ad)}" maxlength="80" placeholder="Örn. Ahmet Yılmaz"></div>
+      <div class="alan"><label class="et">Çalışma günleri</label><div class="cipler gunler">${GUN.slice(1).map((g, i) => `<button type="button" class="cip${e.gunler.includes(i + 1) ? ' secili' : ''}" data-g="${i + 1}">${g}</button>`).join('')}</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="not" style="margin:0">${n} üye · ${raporlar.filter(r => r.ekip_id === e.id && r.durum === 'gonderildi').length} rapor</span>
+        <div style="display:flex;gap:6px"><button class="btn kucuk" data-a="aktif">${e.aktif ? 'Pasifleştir' : 'Aktifleştir'}</button><button class="btn kucuk ana" data-a="kaydet">Kaydet</button></div></div>
+      <div class="link-kutu"><input readonly value="${esc(link)}"><button class="btn kucuk" data-a="kopya">Kopyala</button><button class="btn kucuk" data-a="wa">WhatsApp</button></div>
+      <div style="text-align:right;margin-top:6px"><button class="btn kucuk sil" data-a="yeni" style="min-height:30px;border:0">Yeni link üret</button></div></div>`; }).join('');
+}
+$('ekipler').onclick = async ev => {
+  const k = ev.target.closest('.ekip-kart'); if (!k) return;
+  const e = ekipler.find(x => x.id === k.dataset.id), g = ev.target.dataset.g, a = ev.target.dataset.a;
+  if (g) return ev.target.classList.toggle('secili');
+  const link = dizin + 'lider.html?k=' + e.token;
+  const guncelle = async veri => { const [y] = await api('ekip?id=eq.' + e.id, {method: 'PATCH', headers: {Prefer: 'return=representation'}, body: JSON.stringify(veri)}); Object.assign(e, y); ekipCiz(); genelCiz(); };
+  try {
+    if (a === 'kaydet') {
+      const ad = k.querySelector('[data-f=ad]').value.trim(); if (!ad) return bildir('Ekip adı boş olamaz', 1);
+      await guncelle({ad, cins: k.querySelector('[data-f=cins]').value, lider_ad: k.querySelector('[data-f=lider_ad]').value.trim(), gunler: [...k.querySelectorAll('.gunler .secili')].map(b => +b.dataset.g)});
+      bildir('Kaydedildi');
+    } else if (a === 'aktif') {
+      if (e.aktif && !confirm(e.ad + ' pasifleşsin mi? Lider linki çalışmaz, raporları durur.')) return;
+      await guncelle({aktif: !e.aktif});
+    } else if (a === 'kopya') { await navigator.clipboard.writeText(link); bildir('Link kopyalandı'); }
+    else if (a === 'wa') open('https://wa.me/?text=' + encodeURIComponent(`Selam${e.lider_ad ? ' ' + e.lider_ad.split(' ')[0] : ''}, ${e.ad} için haftalık faaliyet raporu linkin (sana özel, paylaşma):\n${link}\n\nTelefonunda ana ekrana ekleyebilirsin.`), '_blank');
+    else if (a === 'yeni') { if (confirm('Eski link hemen geçersiz olur. Yeni link üretilsin mi?')) { await guncelle({token: yeniToken()}); bildir('Yeni link hazır, lidere gönder'); } }
+  } catch (er) { bildir(er.message, 1); }
+};
+$('ekipEkle').onclick = async () => {
+  const ad = prompt('Yeni ekibin adı:'); if (!ad?.trim()) return;
+  try { const [y] = await api('ekip', {method: 'POST', headers: {Prefer: 'return=representation'}, body: JSON.stringify({ad: ad.trim(), cins: confirm('Kız ekibi mi? (İptal = Erkek)') ? 'kiz' : 'erkek'})}); ekipler.push(y); ekipCiz(); genelCiz(); bildir('Ekip eklendi'); }
+  catch (er) { bildir(er.message, 1); }
+};
+
+if (tok) ac().catch(cikis);
+</script>
+</body>
+</html>

@@ -6,89 +6,87 @@
 <meta name="color-scheme" content="light">
 <meta property="og:title" content="ATİK Spor Kulübü Kayıt">
 <meta property="og:description" content="Etkinlik kaydı için formu doldurun.">
-<link rel="stylesheet" href="ortak.css?v=3">
+<link rel="stylesheet" href="ortak.css?v=5">
 </head><body>
 <div class="sayfa">
   <div class="ust"><img src="logo.png" alt=""><b>ATİK Spor Kulübü</b></div>
   <div id="kap"><p class="alt">Yükleniyor…</p></div>
 </div>
 <script src="config.js?v=3"></script>
+<script src="ortak.js?v=4"></script>
 <script>
 const kap = document.getElementById('kap');
 const slug = new URLSearchParams(location.search).get('e') || '';
 const H = {apikey: CFG.ANON, Authorization: 'Bearer ' + CFG.ANON, 'Content-Type': 'application/json'};
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let etk;
+const {esc} = FormUI;
+let etk, ui, adim = 0, kalan = null;
 
-function tcGecerli(t) {
-  if (!/^[1-9]\d{10}$/.test(t)) return false;
-  const d = t.split('').map(Number);
-  const a = (d[0]+d[2]+d[4]+d[6]+d[8]) * 7 - (d[1]+d[3]+d[5]+d[7]);
-  return ((a % 10) + 10) % 10 === d[9] && d.slice(0, 10).reduce((x, y) => x + y) % 10 === d[10];
-}
-const tel = v => { v = v.replace(/\D/g, ''); if (v.startsWith('90') && v.length === 12) v = '0' + v.slice(2); if (v.length === 10) v = '0' + v; return v; };
+const mesaj = (b, m) => { kap.innerHTML = `<div class="sonuc"><h2>${b}</h2><p class="alt">${m}</p></div>`; };
+const zamanYaz = d => new Date(d).toLocaleString('tr-TR', {dateStyle: 'long', timeStyle: 'short'});
 
 async function yukle() {
   try {
     const r = await fetch(`${CFG.URL}/rest/v1/etkinlik?slug=eq.${encodeURIComponent(slug)}&select=*`, {headers: H});
-    const j = await r.json();
-    etk = j[0];
+    etk = (await r.json())[0];
   } catch (e) {}
-  if (!etk) { kap.innerHTML = '<div class="sonuc"><h2>Kayıt şu an açık değil</h2><p class="alt">Bağlantı hatalı ya da kayıt kapanmış olabilir.</p></div>'; return; }
+  if (!etk) return mesaj('Kayıt şu an açık değil', 'Bağlantı hatalı ya da kayıt kapanmış olabilir.');
   document.title = etk.baslik + ' · ATİK';
-  kap.innerHTML = `<h1>${esc(etk.baslik)}</h1>${etk.aciklama ? `<p class="alt">${esc(etk.aciklama)}</p>` : ''}
-  <form id="f" novalidate><div id="hata"></div><div class="kart">${etk.alanlar.map(alanHtml).join('')}</div>
+  const simdi = Date.now();
+  if (etk.baslangic && simdi < new Date(etk.baslangic)) return mesaj(esc(etk.baslik), 'Kayıt ' + zamanYaz(etk.baslangic) + ' tarihinde açılacak.');
+  if (etk.bitis && simdi > new Date(etk.bitis)) return mesaj('Kayıt sona erdi', 'Bu etkinliğin kayıt süresi doldu.');
+  if (etk.kontenjan) {
+    try {
+      const r = await fetch(`${CFG.URL}/rest/v1/rpc/etkinlik_doluluk`, {method: 'POST', headers: H, body: JSON.stringify({p_slug: slug})});
+      const n = await r.json(); if (typeof n === 'number') kalan = Math.max(0, etk.kontenjan - n);
+    } catch (e) {}
+    if (kalan === 0) return mesaj('Kontenjan doldu', 'Bu etkinlik için tüm kontenjan doldu. İlginiz için teşekkür ederiz.');
+  }
+  const kapak = FormUI.gorselGuvenli(etk.kapak);
+  kap.innerHTML = `${kapak ? `<img class="kapak" src="${esc(kapak)}" alt="">` : ''}<h1>${esc(etk.baslik)}</h1>${etk.aciklama ? `<p class="alt">${esc(etk.aciklama)}</p>` : ''}
+  ${kalan != null && kalan <= 20 ? `<p class="kalan">Kalan kontenjan: <b>${kalan}</b></p>` : ''}
+  <form id="f" novalidate><div id="hata"></div><div id="alanlar"></div>
   <div class="hp"><input id="hp" tabindex="-1" autocomplete="off"></div>
-  <button class="btn ana" id="gonder">Kaydı Gönder</button>
+  <div id="ilerleme" class="kvkk" style="text-align:center;margin:0 0 8px"></div>
+  <div class="gezin"><button type="button" class="btn" id="geri" hidden>Geri</button><button class="btn ana" id="ileri"></button></div>
   <p class="kvkk">Bilgileriniz yalnızca bu etkinliğin kayıt işlemleri için kullanılır, üçüncü kişilerle paylaşılmaz.</p></form>`;
-  document.getElementById('f').onsubmit = gonder;
+  ui = FormUI.ciz(etk, document.getElementById('alanlar'));
+  document.getElementById('f').onsubmit = ileri;
+  document.getElementById('geri').onclick = () => git(adim - 1);
+  git(0);
 }
 
-function alanHtml(a) {
-  const y = a.zorunlu ? '<span class="yildiz">*</span>' : '';
-  const id = 'a_' + a.ad;
-  let g;
-  if (a.tur === 'uzun') g = `<textarea id="${id}" maxlength="500"></textarea>`;
-  else if (a.tur === 'secim') g = `<select id="${id}"><option value="">Seçiniz</option>${(a.secenekler||[]).map(s => `<option>${esc(s)}</option>`).join('')}</select>`;
-  else if (a.tur === 'onay') return `<div class="alan" data-ad="${a.ad}"><label class="secim"><input type="checkbox" id="${id}"><span>${esc(a.etiket)}${y}</span></label></div>`;
-  else {
-    const t = {tc:'text',tel:'tel',sayi:'number',tarih:'date'}[a.tur] || 'text';
-    const im = a.tur === 'tc' ? ' inputmode="numeric" maxlength="11"' : a.tur === 'tel' ? ' inputmode="tel" maxlength="16"' : a.tur === 'sayi' ? ' inputmode="numeric" min="0" max="999"' : ' maxlength="120"';
-    g = `<input id="${id}" type="${t}"${im} autocomplete="off">`;
-  }
-  return `<div class="alan" data-ad="${a.ad}"><label class="bas" for="${id}">${esc(a.etiket)}${y}</label>${g}</div>`;
+function git(i) {
+  adim = i; ui.goster(i);
+  const son = i === ui.say - 1;
+  document.getElementById('geri').hidden = i === 0;
+  document.getElementById('ileri').textContent = son ? 'Kaydı Gönder' : 'İleri';
+  document.getElementById('ilerleme').textContent = ui.say > 1 ? `Adım ${i + 1} / ${ui.say}` : '';
+  if (i) window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-function isaretle(a, msg) {
-  const el = kap.querySelector(`[data-ad="${a.ad}"]`);
-  el.classList.add('hatali');
-  el.insertAdjacentHTML('beforeend', `<div class="mesaj">${msg}</div>`);
-}
-
-async function gonder(ev) {
+async function ileri(ev) {
   ev.preventDefault();
-  kap.querySelectorAll('.mesaj').forEach(e => e.remove());
-  kap.querySelectorAll('.hatali').forEach(e => e.classList.remove('hatali'));
   document.getElementById('hata').innerHTML = '';
-  const veri = {}; let ok = true;
-  for (const a of etk.alanlar) {
-    const el = document.getElementById('a_' + a.ad);
-    let v = a.tur === 'onay' ? (el.checked ? 'Evet' : '') : el.value.trim();
-    if (a.tur === 'tel' && v) v = tel(v);
-    if (a.zorunlu && !v) { isaretle(a, 'Bu alan zorunlu.'); ok = false; }
-    else if (v && a.tur === 'tc' && !tcGecerli(v)) { isaretle(a, 'T.C. kimlik numarası hatalı görünüyor.'); ok = false; }
-    else if (v && a.tur === 'tel' && !/^05\d{9}$/.test(v)) { isaretle(a, 'Telefon 05XX ile başlayan 11 haneli olmalı.'); ok = false; }
-    veri[a.ad] = v;
+  if (adim < ui.say - 1) {
+    const s = ui.oku(adim);
+    if (!s.ok) return s.ilk.scrollIntoView({behavior: 'smooth', block: 'center'});
+    return git(adim + 1);
   }
-  if (!ok) { kap.querySelector('.hatali').scrollIntoView({behavior: 'smooth', block: 'center'}); return; }
+  const t = ui.oku(null);  // tüm bölümler
+  if (!t.ok) {
+    const b = +t.ilk.closest('.bolum').dataset.b; if (b !== adim) git(b);
+    return t.ilk.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
   if (document.getElementById('hp').value) return sonuc(); // bot: sessizce başarılı say
-  const btn = document.getElementById('gonder'); btn.disabled = true; btn.textContent = 'Gönderiliyor…';
-  const body = {etkinlik_id: etk.id, veri, tekil: etk.tekil_alan ? (veri[etk.tekil_alan] || null) : null};
+  const btn = document.getElementById('ileri'); btn.disabled = true; btn.textContent = 'Gönderiliyor…';
+  const body = {etkinlik_id: etk.id, veri: t.veri, tekil: etk.tekil_alan ? (t.veri[etk.tekil_alan] || null) : null};
   try {
     const r = await fetch(`${CFG.URL}/rest/v1/kayit`, {method: 'POST', headers: {...H, Prefer: 'return=minimal'}, body: JSON.stringify(body)});
     if (r.ok) return sonuc();
     const j = await r.json().catch(() => ({}));
     if (j.code === '23505') return sonuc('Bu kişi için zaten bir kayıt var. Ek bir işlem yapmanıza gerek yok.');
+    if (j.message === 'kontenjan_dolu') return mesaj('Kontenjan doldu', 'Siz doldururken kontenjan doldu. İlginiz için teşekkür ederiz.');
+    if (j.message === 'sure_disi') return mesaj('Kayıt süresi dışında', 'Bu etkinliğin kayıt süresi dışındasınız.');
     throw new Error();
   } catch (e) {
     document.getElementById('hata').innerHTML = '<div class="kutu-hata">Gönderilemedi. İnternetinizi kontrol edip tekrar deneyin.</div>';

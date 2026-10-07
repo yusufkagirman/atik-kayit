@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="light">
 <title>ATİK Spor Kulübü Yönetim Paneli</title>
-<link rel="stylesheet" href="ortak.css?v=3">
+<link rel="stylesheet" href="ortak.css?v=5">
 <style>
 .sayfa{max-width:1000px}
 .satir{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
@@ -14,9 +14,34 @@
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
 th{background:var(--panel);font-size:12px;position:sticky;top:0}
+td[data-k]{cursor:text}
 .link{background:var(--g50);border-radius:12px;padding:10px 14px;word-break:break-all;margin-bottom:12px;font-size:13px}
 details{margin-bottom:14px}summary{cursor:pointer;font-weight:700}
 .sil{color:var(--hata);cursor:pointer;background:none;border:0;font:inherit}
+.sekmeler{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.sekmeler button{border:0;background:none;font:700 15px Manrope,system-ui,sans-serif;padding:10px 16px;cursor:pointer;color:var(--ink3);border-bottom:3px solid transparent;margin-bottom:-1px}
+.sekmeler button.on{color:var(--g700);border-color:var(--g700)}
+.ozet{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:16px}
+.ozet .kart{margin:0;padding:14px}.ozet b{font-size:13px}
+.cubuk{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:6px}.cubuk i{display:block;height:8px;border-radius:4px;background:var(--g600);min-width:2px}.cubuk span{flex:0 0 auto;color:var(--ink3)}
+.fk{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.fk.surukle{outline:2px dashed var(--g600)}
+.fk-ust{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.fk-ust select{flex:1 1 150px;min-height:38px;padding:4px 10px;font-size:14px}
+.fk .ik{min-height:36px;min-width:36px;padding:0 8px;border:1px solid var(--line2);background:#fff;border-radius:10px;cursor:pointer;font:700 14px Manrope,sans-serif;color:var(--ink2)}
+.fk .tut{cursor:grab;padding:0 8px;font-size:18px;color:var(--ink3);user-select:none}
+.fk input[type=text],.fk input[type=url],.fk textarea{margin-bottom:8px;min-height:40px;font-size:15px}
+.fk textarea{min-height:80px}
+.fk label.kk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink2);margin:2px 0}
+.fk label.kk input{width:18px;min-height:18px;height:18px}
+.fk .kos{background:var(--panel);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px}
+.fk .kos select{min-height:36px;margin:4px 0;font-size:13px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px}.meta .tam{grid-column:1/-1}
+@media(max-width:560px){.meta{grid-template-columns:1fr}}
+.ekle{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.onizleme{border:2px dashed var(--line2);border-radius:18px;padding:16px;margin:12px 0;background:var(--bg)}
+.onizleme .sayfa-i{max-width:560px;margin:0 auto}
+.gri{color:var(--ink3);font-size:13px}
 </style></head><body>
 <div class="sayfa">
  <div class="ust"><img src="logo.png" alt=""><b>ATİK Spor Kulübü Yönetim Paneli</b></div>
@@ -25,36 +50,77 @@ details{margin-bottom:14px}summary{cursor:pointer;font-weight:700}
   <div class="alan"><label class="bas">Parola</label><div style="position:relative"><input id="pw" type="password" autocomplete="current-password" style="padding-right:84px"><button type="button" id="goz" class="btn" style="position:absolute;right:4px;top:4px;min-height:38px;padding:0 12px">Göster</button></div></div>
   <div class="kvkk" id="say2">Parola: 0 karakter yazıldı</div>
   <button class="btn ana" id="gb" style="margin-top:12px">Giriş</button></div>
+
  <div id="panel" hidden>
-  <div class="satir"><select id="sec"></select><button class="btn" id="kapat"></button><button class="btn" id="csv">CSV indir</button><button class="btn" id="yenile">Yenile</button><button class="btn" id="cik">Çıkış</button></div>
-  <div class="link" id="lnk"></div>
+  <div class="sekmeler"><button id="t-sonuc" class="on">Sonuçlar</button><button id="t-form">Formlar</button><span style="flex:1"></span><button id="cik" style="font-size:13px;color:var(--ink3)">Çıkış</button></div>
   <div id="durum" class="kvkk" style="margin:0 0 10px"></div>
-  <details><summary>Yeni etkinlik oluştur</summary><div class="kart" style="margin-top:10px">
-   <div class="alan"><label class="bas">Başlık</label><input id="nb" placeholder="Fon Yemeği 2026"></div>
-   <div class="alan"><label class="bas">Açıklama (isteğe bağlı)</label><input id="na"></div>
-   <div class="alan"><label class="bas">Alanlar (her satıra bir alan)</label>
-    <textarea id="nal" style="min-height:140px">Öğrenci Ad Soyad | metin | *
+
+  <!-- SONUÇLAR -->
+  <div id="v-sonuc">
+   <div class="satir"><select id="sec"></select><button class="btn" id="kapat"></button><button class="btn" id="csv">CSV indir</button><button class="btn" id="yenile">Yenile</button></div>
+   <div class="link" id="lnk"></div>
+   <div class="satir"><input id="ara" placeholder="Ara…"><b id="say"></b></div>
+   <div class="tablo"><table id="tb"></table></div>
+   <div class="gri" style="margin-top:6px">Bir hücreye çift tıklayarak değeri düzeltebilirsiniz.</div>
+   <div class="ozet" id="ozet"></div>
+  </div>
+
+  <!-- FORMLAR -->
+  <div id="v-form" hidden>
+   <div id="liste-gor">
+    <div class="satir"><button class="btn ana" id="yeni">+ Yeni form</button></div>
+    <details><summary>Hızlı oluştur (metinle)</summary><div class="kart" style="margin-top:10px">
+     <div class="alan"><label class="bas">Başlık</label><input id="nb" placeholder="Fon Yemeği 2026"></div>
+     <div class="alan"><label class="bas">Açıklama (isteğe bağlı)</label><input id="na"></div>
+     <div class="alan"><label class="bas">Alanlar (her satıra bir alan)</label>
+      <textarea id="nal" style="min-height:140px">Öğrenci Ad Soyad | metin | *
 T.C. Kimlik No | tc | *
 Veli Telefonu | tel | *
 Katılacak kişi sayısı | sayi | *</textarea>
-    <div class="kvkk">Biçim: <b>Etiket | tür | *</b> (* zorunlu). Türler: metin, tc, tel, sayi, tarih, uzun, onay, secim (seçim için sona <b>| Seçenek1, Seçenek2</b>). T.C. alanı varsa aynı TC ikinci kez kaydolamaz.</div></div>
-   <button class="btn ana" id="olustur">Oluştur</button></div></details>
-  <div class="satir"><input id="ara" placeholder="Ara…"><b id="say"></b></div>
-  <div class="tablo"><table id="tb"></table></div>
+      <div class="kvkk">Biçim: <b>Etiket | tür | *</b> (* zorunlu). Türler: metin, tc, tel, sayi, tarih, uzun, onay, secim, radyo, coktan (seçimli türler için sona <b>| Seçenek1, Seçenek2</b>). T.C. alanı varsa aynı TC ikinci kez kaydolamaz. Daha fazlası için "+ Yeni form".</div></div>
+     <button class="btn ana" id="olustur">Oluştur</button></div></details>
+    <div class="tablo"><table id="liste"></table></div>
+   </div>
+
+   <div id="duzenle" hidden>
+    <div class="satir"><button class="btn" id="d-geri">← Formlara dön</button><b id="d-baslik"></b></div>
+    <div class="kart"><div class="meta">
+     <div class="tam alan"><label class="bas">Başlık</label><input id="e-baslik"></div>
+     <div class="tam alan"><label class="bas">Açıklama (isteğe bağlı)</label><textarea id="e-acik" style="min-height:70px"></textarea></div>
+     <div class="alan"><label class="bas">Kontenjan (boş = sınırsız)</label><input id="e-kont" type="number" min="1" inputmode="numeric"></div>
+     <div class="alan"><label class="bas">Kapak görseli</label><div class="satir" style="margin:0"><input id="e-kapak" type="url" placeholder="https://… ya da yükle"><button class="btn" id="e-yukle">Yükle</button></div></div>
+     <div class="alan"><label class="bas">Kayıt başlangıcı (isteğe bağlı)</label><input id="e-bas" type="datetime-local"></div>
+     <div class="alan"><label class="bas">Kayıt bitişi (isteğe bağlı)</label><input id="e-bit" type="datetime-local"></div>
+    </div></div>
+    <div id="kartlar"></div>
+    <div class="ekle"><button class="btn" data-ekle="metin">+ Alan</button><button class="btn" data-ekle="baslik">+ Bölüm</button><button class="btn" data-ekle="gorsel">+ Görsel</button><button class="btn" data-ekle="video">+ Video</button></div>
+    <div id="e-hata"></div>
+    <div class="satir"><button class="btn ana" id="e-kaydet">Kaydet</button><button class="btn" id="e-onizle">Önizleme</button></div>
+    <div id="onizleme" class="onizleme" hidden><div class="sayfa-i"><div id="o-kap"></div>
+     <div class="gezin" style="margin-top:12px"><button class="btn" id="o-geri">Geri</button><button class="btn ana" id="o-ileri">İleri</button></div>
+     <p class="kvkk">Önizleme: gönderim yapılmaz.</p></div></div>
+    <input type="file" id="dosya" accept="image/jpeg,image/png,image/webp" hidden>
+   </div>
+  </div>
  </div>
 </div>
 <script src="config.js?v=3"></script>
+<script src="ortak.js?v=4"></script>
 <script>
 const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let tok = sessionStorage.getItem('tok'), etks = [], kayitlar = [];
+const {esc} = FormUI;
+let tok = sessionStorage.getItem('tok'), etks = [], kayitlar = [], sayilar = {};
 const H = () => ({apikey: CFG.ANON, Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json'});
 const api = (yol, o = {}) => fetch(CFG.URL + '/rest/v1/' + yol, {...o, headers: {...H(), ...(o.headers || {})}}).then(async r => {
   if (r.status === 401) { cikis(); throw new Error('oturum'); }
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || r.status);
   return r.status === 204 ? null : r.json().catch(() => null);
 });
+const durum = (m, hata) => { $('durum').textContent = m; $('durum').style.color = hata ? 'var(--hata)' : 'var(--g700)'; };
+const dizin = location.href.replace(/yonetim\.html.*$/, '');
+const veriliAlan = e => e.alanlar.filter(a => !FormUI.GOSTERIM.includes(a.tur));
 
+/* ---------- giriş ---------- */
 $('goz').onclick = () => { const g = $('pw').type === 'password'; $('pw').type = g ? 'text' : 'password'; $('goz').textContent = g ? 'Gizle' : 'Göster'; };
 $('gb').onclick = async () => {
   const hata = m => $('ghata').innerHTML = '<div class="kutu-hata">' + m + '</div>';
@@ -74,15 +140,25 @@ $('pw').onkeydown = e => { if (e.key === 'Enter') $('gb').click(); };
 function cikis() { sessionStorage.removeItem('tok'); tok = null; $('panel').hidden = true; $('giris').hidden = false; }
 $('cik').onclick = cikis;
 
+/* ---------- sekmeler ---------- */
+function sekme(s) {
+  $('v-sonuc').hidden = s !== 'sonuc'; $('v-form').hidden = s !== 'form';
+  $('t-sonuc').classList.toggle('on', s === 'sonuc'); $('t-form').classList.toggle('on', s === 'form');
+}
+$('t-sonuc').onclick = () => sekme('sonuc'); $('t-form').onclick = () => { sekme('form'); listeCiz(); };
+
 async function ac() {
   $('giris').hidden = true; $('panel').hidden = false;
   etks = await api('etkinlik?select=*&order=olusma.desc');
   const eski = $('sec').value;
   $('sec').innerHTML = etks.map(e => `<option value="${e.id}">${esc(e.baslik)}${e.acik ? '' : ' (kapalı)'}</option>`).join('');
   if (eski) $('sec').value = eski;
-  sec();
+  await sec();
+  listeCiz();
 }
 const sc = () => etks.find(e => e.id === $('sec').value);
+
+/* ---------- sonuçlar ---------- */
 async function tumKayit(id) {
   let hepsi = [];
   for (let n = 0; ; n += 1000) {
@@ -94,20 +170,31 @@ async function tumKayit(id) {
 async function sec() {
   const e = sc(); if (!e) return;
   $('kapat').textContent = e.acik ? 'Kaydı kapat' : 'Kaydı aç';
-  const dizin = location.href.replace(/yonetim\.html.*$/, '');
   $('lnk').innerHTML = 'Veli linki: <b>' + esc(dizin + 'form.html?e=' + e.slug) + '</b>';
   kayitlar = await tumKayit(e.id);
+  sayilar[e.id] = kayitlar.length;
   ciz();
   durum('Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR'));
 }
 function ciz() {
-  const e = sc(), q = $('ara').value.toLowerCase();
+  const e = sc(), q = $('ara').value.toLowerCase(), al = veriliAlan(e);
   const f = kayitlar.filter(k => !q || JSON.stringify(k.veri).toLowerCase().includes(q));
-  $('say').textContent = f.length + ' kayıt';
-  $('tb').innerHTML = `<tr><th>#</th>${e.alanlar.map(a => `<th>${esc(a.etiket)}</th>`).join('')}<th>Zaman</th><th></th></tr>` +
-    f.map((k, i) => `<tr><td>${f.length - i}</td>${e.alanlar.map(a => `<td>${esc(k.veri[a.ad])}</td>`).join('')}<td>${new Date(k.olusma).toLocaleString('tr-TR')}</td><td><button class="sil" data-sil="${k.id}">Sil</button></td></tr>`).join('');
+  $('say').textContent = f.length + ' kayıt' + (e.kontenjan ? ` / kontenjan ${e.kontenjan}` : '') + (e.kontenjan && kayitlar.length >= e.kontenjan ? ' (DOLU)' : '');
+  $('tb').innerHTML = `<tr><th>#</th>${al.map(a => `<th>${esc(a.etiket)}</th>`).join('')}<th>Zaman</th><th></th></tr>` +
+    f.map((k, i) => `<tr><td>${f.length - i}</td>${al.map(a => `<td${a.ad === e.tekil_alan ? '' : ` data-k="${k.id}" data-a="${esc(a.ad)}"`}>${esc(k.veri[a.ad])}</td>`).join('')}<td>${new Date(k.olusma).toLocaleString('tr-TR')}</td><td><button class="sil" data-sil="${k.id}">Sil</button></td></tr>`).join('');
+  ozetCiz(e);
 }
-const durum = (m, hata) => { $('durum').textContent = m; $('durum').style.color = hata ? 'var(--hata)' : 'var(--g700)'; };
+function ozetCiz(e) {
+  const kutu = [];
+  for (const a of veriliAlan(e).filter(a => ['secim', 'radyo', 'coktan', 'onay'].includes(a.tur))) {
+    const say = {};
+    for (const k of kayitlar) for (const v of String(k.veri[a.ad] || '').split(FormUI.AYRAC).filter(Boolean)) say[v] = (say[v] || 0) + 1;
+    const sec = a.tur === 'onay' ? ['Evet'] : a.secenekler || [];
+    const en = Math.max(1, ...sec.map(s => say[s] || 0));
+    kutu.push(`<div class="kart"><b>${esc(a.etiket)}</b>${sec.map(s => `<div class="cubuk"><i style="width:${Math.round((say[s] || 0) / en * 55)}%"></i><span>${esc(s)}: ${say[s] || 0}</span></div>`).join('')}</div>`);
+  }
+  $('ozet').innerHTML = kutu.join('');
+}
 $('tb').onclick = async ev => {
   const b = ev.target.closest('button'); if (!b) return;
   if (b.dataset.sil) { b.parentNode.innerHTML = `<button class="sil" data-evet="${b.dataset.sil}">Evet, sil</button> <button class="sil" style="color:var(--ink3)" data-vaz="1">Vazgeç</button>`; return; }
@@ -119,35 +206,263 @@ $('tb').onclick = async ev => {
   } catch (e) { durum('Silinemedi: ' + e.message, true); }
   sec();
 };
+$('tb').ondblclick = async ev => {
+  const td = ev.target.closest('td[data-k]'); if (!td) return;
+  const k = kayitlar.find(x => x.id == td.dataset.k), ad = td.dataset.a; if (!k) return;
+  const yeni = prompt('Yeni değer:', k.veri[ad] ?? ''); if (yeni === null) return;
+  try {
+    const r = await api('kayit?id=eq.' + k.id, {method: 'PATCH', headers: {Prefer: 'return=representation'}, body: JSON.stringify({veri: {...k.veri, [ad]: yeni.trim()}})});
+    durum(r && r.length ? 'Kayıt güncellendi.' : 'Güncellenemedi.', !(r && r.length));
+  } catch (e) { durum('Güncellenemedi: ' + e.message, true); }
+  sec();
+};
 $('sec').onchange = sec; $('ara').oninput = ciz; $('yenile').onclick = sec;
 $('kapat').onclick = async () => { const e = sc(); await api('etkinlik?id=eq.' + e.id, {method: 'PATCH', body: JSON.stringify({acik: !e.acik})}); ac(); };
 $('csv').onclick = async () => {
   try { kayitlar = await tumKayit(sc().id); ciz(); } catch (x) { return durum('CSV için kayıtlar alınamadı: ' + x.message, true); }
-  const e = sc(), q = c => '"' + String(c ?? '').replace(/"/g, '""') + '"';
+  const e = sc(), al = veriliAlan(e), q = c => '"' + String(c ?? '').replace(/"/g, '""') + '"';
   const hucre = (a, v) => { v = v ?? ''; if (/^[=+\-@]/.test(v)) v = "'" + v; return (a.tur === 'tc' || a.tur === 'tel') && v ? '="' + v + '"' : q(v); };
-  const satir = ['sep=;', e.alanlar.map(a => q(a.etiket)).concat(q('Zaman')).join(';')]
-    .concat(kayitlar.map(k => e.alanlar.map(a => hucre(a, k.veri[a.ad])).concat(q(new Date(k.olusma).toLocaleString('tr-TR'))).join(';')));
+  const satir = ['sep=;', al.map(a => q(a.etiket)).concat(q('Zaman')).join(';')]
+    .concat(kayitlar.map(k => al.map(a => hucre(a, k.veri[a.ad])).concat(q(new Date(k.olusma).toLocaleString('tr-TR'))).join(';')));
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\ufeff' + satir.join('\r\n')], {type: 'text/csv;charset=utf-8'}));
+  a.href = URL.createObjectURL(new Blob(['﻿' + satir.join('\r\n')], {type: 'text/csv;charset=utf-8'}));
   const z = new Date(), p = n => String(n).padStart(2, '0');
   a.download = e.slug + '-' + z.getFullYear() + p(z.getMonth() + 1) + p(z.getDate()) + '-' + p(z.getHours()) + p(z.getMinutes()) + p(z.getSeconds()) + '.csv'; a.click();
   durum(kayitlar.length + " kayıt indirildi. Dosya adında saat var; indirilenler klasöründe en yeni dosyayı açın.");
 };
-const slugla = s => s.toLocaleLowerCase('tr').replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+/* ---------- formlar: liste ---------- */
+async function sayiAl(id) {
+  const r = await fetch(`${CFG.URL}/rest/v1/kayit?etkinlik_id=eq.${id}&select=id`, {headers: {...H(), Prefer: 'count=exact', Range: '0-0', 'Range-Unit': 'items'}});
+  return +(r.headers.get('content-range') || '').split('/')[1] || 0;
+}
+async function listeCiz() {
+  const satir = e => `<tr><td><b>${esc(e.baslik)}</b>${e.acik ? '' : ' <span class="gri">(kapalı)</span>'}</td><td>${sayilar[e.id] ?? '…'}${e.kontenjan ? ' / ' + e.kontenjan : ''}</td><td><button class="sil" style="color:var(--g700)" data-l="duzenle" data-id="${e.id}">Düzenle</button> <button class="sil" style="color:var(--g700)" data-l="kopya" data-id="${e.id}">Kopyala</button> <button class="sil" style="color:var(--g700)" data-l="link" data-id="${e.id}">Linki kopyala</button> <button class="sil" style="color:var(--ink2)" data-l="ac" data-id="${e.id}">${e.acik ? 'Kapat' : 'Aç'}</button> <button class="sil" data-l="sil" data-id="${e.id}">Sil</button></td></tr>`;
+  const ciz2 = () => $('liste').innerHTML = '<tr><th>Form</th><th>Kayıt</th><th></th></tr>' + etks.map(satir).join('');
+  ciz2();
+  await Promise.all(etks.map(async e => { try { sayilar[e.id] = await sayiAl(e.id); } catch (x) {} }));
+  ciz2();
+}
+$('liste').onclick = async ev => {
+  const b = ev.target.closest('button[data-l]'); if (!b) return;
+  const e = etks.find(x => x.id === b.dataset.id), l = b.dataset.l;
+  if (l === 'duzenle') return editorAc(e, false);
+  if (l === 'kopya') return editorAc(e, true);
+  if (l === 'link') { const u = dizin + 'form.html?e=' + e.slug; try { await navigator.clipboard.writeText(u); durum('Link kopyalandı: ' + u); } catch (x) { prompt('Linki kopyalayın:', u); } return; }
+  if (l === 'ac') { await api('etkinlik?id=eq.' + e.id, {method: 'PATCH', body: JSON.stringify({acik: !e.acik})}); return ac(); }
+  if (l === 'sil') {
+    const n = sayilar[e.id] ?? await sayiAl(e.id);
+    if (!confirm(`"${e.baslik}" formu ve ${n} kaydı KALICI olarak silinecek. Emin misiniz?`)) return;
+    if (n > 0 && !confirm(`${n} kayıt geri getirilemez. Önce CSV indirdiniz mi? Yine de silinsin mi?`)) return;
+    try { await api('etkinlik?id=eq.' + e.id, {method: 'DELETE'}); durum('Form silindi.'); } catch (x) { durum('Silinemedi: ' + x.message, true); }
+    ac();
+  }
+};
+
+/* ---------- hızlı oluştur ---------- */
+const slugla = s => s.toLocaleLowerCase('tr').replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'form';
+function bosSlug(baslik) {
+  let s = slugla(baslik), n = 2; const b = s;
+  while (etks.some(e => e.slug === s)) s = b + '-' + n++;
+  return s;
+}
+function tekilTc(alanlar) { return alanlar.some(a => a.ad === 'tc' && a.tur === 'tc') ? 'tc' : null; }
 $('olustur').onclick = async () => {
   const baslik = $('nb').value.trim(); if (!baslik) return alert('Başlık gerekli.');
   const alanlar = $('nal').value.split('\n').map(s => s.trim()).filter(Boolean).map((s, i) => {
     const p = s.split('|').map(x => x.trim());
-    return {ad: 'a' + (i + 1), etiket: p[0], tur: p[1] || 'metin', zorunlu: p[2] === '*', ...(p[3] ? {secenekler: p[3].split(',').map(x => x.trim())} : {})};
+    return {ad: 'a' + (i + 1), etiket: p[0], tur: p[1] || 'metin', zorunlu: p[2] === '*', ...(p[3] ? {secenekler: p[3].split(',').map(x => x.trim()).filter(Boolean)} : {})};
   });
-  const tc = alanlar.find(a => a.tur === 'tc');
-  if (tc) tc.ad = 'tc';
+  const tc = alanlar.find(a => a.tur === 'tc'); if (tc) tc.ad = 'tc';
+  const tl = alanlar.find(a => a.tur === 'tel'); if (tl) tl.ad = 'tel';
   try {
-    await api('etkinlik', {method: 'POST', headers: {Prefer: 'return=minimal'}, body: JSON.stringify({slug: slugla(baslik), baslik, aciklama: $('na').value.trim() || null, alanlar, tekil_alan: tc ? 'tc' : null})});
-  } catch (e) { return alert('Oluşturulamadı (aynı başlık var mı?): ' + e.message); }
+    await api('etkinlik', {method: 'POST', headers: {Prefer: 'return=minimal'}, body: JSON.stringify({slug: bosSlug(baslik), baslik, aciklama: $('na').value.trim() || null, alanlar, tekil_alan: tekilTc(alanlar)})});
+  } catch (e) { return alert('Oluşturulamadı: ' + e.message); }
   $('nb').value = ''; ac();
 };
-setInterval(() => { if (tok && !$('panel').hidden && !document.hidden && !document.querySelector('[data-evet]')) sec().catch(() => {}); }, 30000);
+
+/* ---------- form düzenleyici ---------- */
+const TUR = {metin: 'Kısa yanıt', uzun: 'Uzun yanıt', secim: 'Açılır liste', radyo: 'Tek seçim', coktan: 'Çoklu seçim', onay: 'Onay kutusu', tc: 'T.C. kimlik no', tel: 'Telefon', sayi: 'Sayı', tarih: 'Tarih', baslik: 'Bölüm (yeni sayfa)', gorsel: 'Görsel', video: 'Video'};
+let ed = null, sutur = -1, yukleHedef = null;
+const yerel = d => { if (!d) return ''; const z = new Date(d), p = n => String(n).padStart(2, '0'); return `${z.getFullYear()}-${p(z.getMonth() + 1)}-${p(z.getDate())}T${p(z.getHours())}:${p(z.getMinutes())}`; };
+const sonrakiAd = () => 'a' + (Math.max(0, ...ed.alanlar.map(a => +(String(a.ad).match(/^a(\d+)$/) || [0, 0])[1])) + 1);
+
+function editorAc(e, kopya) {
+  ed = e ? {id: kopya ? null : e.id, slug: kopya ? '' : e.slug, kayit: kopya ? 0 : (sayilar[e.id] ?? 0), baslik: kopya ? e.baslik + ' (kopya)' : e.baslik, aciklama: e.aciklama || '', kapak: e.kapak || '', kontenjan: kopya ? '' : (e.kontenjan || ''), baslangic: kopya ? '' : e.baslangic, bitis: kopya ? '' : e.bitis,
+      alanlar: JSON.parse(JSON.stringify(e.alanlar || [])), eski: kopya ? {} : Object.fromEntries((e.alanlar || []).map(a => [a.ad, a.tur]))}
+    : {id: null, slug: '', kayit: 0, baslik: '', aciklama: '', kapak: '', kontenjan: '', baslangic: '', bitis: '', alanlar: [{ad: 'ad', etiket: 'Öğrenci Ad Soyad', tur: 'metin', zorunlu: true, yeni: true}, {ad: 'tel', etiket: 'Veli Telefonu', tur: 'tel', zorunlu: true, yeni: true}], eski: {}};
+  $('d-baslik').textContent = ed.id ? 'Formu düzenle' : 'Yeni form';
+  $('e-baslik').value = ed.baslik; $('e-acik').value = ed.aciklama; $('e-kont').value = ed.kontenjan; $('e-kapak').value = ed.kapak;
+  $('e-bas').value = yerel(ed.baslangic); $('e-bit').value = yerel(ed.bitis);
+  $('e-hata').innerHTML = ''; $('onizleme').hidden = true;
+  $('liste-gor').hidden = true; $('duzenle').hidden = false;
+  kartCiz();
+}
+$('yeni').onclick = () => editorAc(null);
+$('d-geri').onclick = () => { if (!confirm('Kaydedilmemiş değişiklikler kaybolur. Çıkılsın mı?')) return; $('duzenle').hidden = true; $('liste-gor').hidden = false; ed = null; };
+
+function kartHtml(a, i) {
+  const ts = Object.entries(TUR).map(([k, v]) => `<option value="${k}"${k === a.tur ? ' selected' : ''}>${v}</option>`).join('');
+  const goster = !FormUI.GOSTERIM.includes(a.tur);
+  const onceki = ed.alanlar.slice(0, i).filter(x => ['secim', 'radyo', 'coktan', 'onay'].includes(x.tur));
+  const hedef = a.kosul && ed.alanlar.find(x => x.ad === a.kosul.alan);
+  const hedefSec = hedef ? (hedef.tur === 'onay' ? ['Evet'] : hedef.secenekler || []) : [];
+  return `<div class="fk" data-i="${i}">
+   <div class="fk-ust"><span class="tut" draggable="true" title="Sürükleyerek sırala">⠿</span>
+    <select data-f="tur">${ts}</select>
+    <button class="ik" data-act="yukari" title="Yukarı">↑</button><button class="ik" data-act="asagi" title="Aşağı">↓</button><button class="ik" data-act="cogalt" title="Çoğalt">⧉</button><button class="ik" data-act="sil" title="Sil" style="color:var(--hata)">✕</button></div>
+   <input type="text" data-f="etiket" maxlength="200" placeholder="${a.tur === 'baslik' ? 'Bölüm başlığı' : a.tur === 'gorsel' || a.tur === 'video' ? 'Alt yazı (isteğe bağlı)' : 'Soru / alan adı'}" value="${esc(a.etiket)}">
+   ${a.tur !== 'gorsel' && a.tur !== 'video' ? `<input type="text" data-f="ipucu" maxlength="300" placeholder="${a.tur === 'baslik' ? 'Bölüm açıklaması (isteğe bağlı)' : 'Küçük açıklama (isteğe bağlı)'}" value="${esc(a.ipucu || '')}">` : ''}
+   ${['secim', 'radyo', 'coktan'].includes(a.tur) ? `<textarea data-f="secenekler" placeholder="Her satıra bir seçenek">${esc((a.secenekler || []).join('\n'))}</textarea>` : ''}
+   ${a.tur === 'gorsel' ? `<div class="satir" style="margin:0 0 8px"><input type="url" data-f="url" placeholder="https://… ya da yükle" value="${esc(a.url || '')}"><button class="btn" data-act="yukle">Yükle</button></div>${a.url && FormUI.gorselGuvenli(a.url) ? `<img class="medya" style="max-height:140px;width:auto;margin-bottom:8px" src="${esc(a.url)}" alt="">` : ''}` : ''}
+   ${a.tur === 'video' ? `<input type="url" data-f="url" placeholder="YouTube ya da Vimeo bağlantısı" value="${esc(a.url || '')}">${a.url && !FormUI.videoGomme(a.url) ? '<div class="mesaj">Yalnız YouTube / Vimeo bağlantısı kabul edilir.</div>' : ''}` : ''}
+   ${goster ? `<label class="kk"><input type="checkbox" data-f="zorunlu"${a.zorunlu ? ' checked' : ''}> Zorunlu</label>` : ''}
+   ${a.tur !== 'baslik' && onceki.length ? `<div class="kos">Göster:
+     <select data-f="kosulAlan"><option value="">Her zaman</option>${onceki.map(x => `<option value="${esc(x.ad)}"${a.kosul && a.kosul.alan === x.ad ? ' selected' : ''}>yalnız "${esc(x.etiket || x.ad)}" şuysa</option>`).join('')}</select>
+     ${hedefSec.map(s => `<label class="kk"><input type="checkbox" data-f="kosulDeger" value="${esc(s)}"${(a.kosul.esit || []).includes(s) ? ' checked' : ''}> ${esc(s)}</label>`).join('')}</div>` : ''}
+  </div>`;
+}
+function kartCiz() {
+  // üstündeki alana bağlı olmayan koşulları temizle (sıra değişince)
+  ed.alanlar.forEach((a, i) => { if (a.kosul && !ed.alanlar.slice(0, i).some(x => x.ad === a.kosul.alan)) delete a.kosul; });
+  $('kartlar').innerHTML = ed.alanlar.map(kartHtml).join('') || '<p class="gri">Henüz alan yok. Aşağıdan ekleyin.</p>';
+}
+function telTcAd(a) {  // tc/tel sunucu doğrulaması "tc" / "tel" anahtarlarına bakar
+  if (a.tur === 'tc' && !ed.alanlar.some(x => x !== a && x.ad === 'tc') && (a.yeni || !ed.kayit)) a.ad = 'tc';
+  if (a.tur === 'tel' && !ed.alanlar.some(x => x !== a && x.ad === 'tel') && (a.yeni || !ed.kayit)) a.ad = 'tel';
+}
+function ekle(tur) {
+  const a = {ad: sonrakiAd(), etiket: '', tur, zorunlu: false, yeni: true};
+  if (FormUI.GOSTERIM.includes(tur)) delete a.zorunlu;
+  ed.alanlar.push(a); kartCiz();
+  const son = $('kartlar').lastElementChild; son.scrollIntoView({block: 'center'}); const inp = son.querySelector('[data-f=etiket]'); if (inp) inp.focus();
+}
+document.querySelectorAll('[data-ekle]').forEach(b => b.onclick = () => ekle(b.dataset.ekle));
+const tasi = (i, j) => { if (j < 0 || j >= ed.alanlar.length || i === j) return; ed.alanlar.splice(j, 0, ed.alanlar.splice(i, 1)[0]); kartCiz(); };
+
+$('kartlar').onclick = ev => {
+  const b = ev.target.closest('button[data-act]'); if (!b) return;
+  const i = +b.closest('.fk').dataset.i, act = b.dataset.act;
+  if (act === 'yukari') tasi(i, i - 1);
+  else if (act === 'asagi') tasi(i, i + 1);
+  else if (act === 'cogalt') { const c = JSON.parse(JSON.stringify(ed.alanlar[i])); c.ad = sonrakiAd(); c.yeni = true; ed.alanlar.splice(i + 1, 0, c); kartCiz(); }
+  else if (act === 'sil') {
+    const a = ed.alanlar[i];
+    if (ed.kayit && ed.eski[a.ad] && !confirm(`"${a.etiket || a.ad}" alanı silinecek. Mevcut ${ed.kayit} kaydın bu alandaki cevapları tabloda görünmez olur (veri silinmez). Devam?`)) return;
+    ed.alanlar.splice(i, 1); kartCiz();
+  } else if (act === 'yukle') { yukleHedef = i; $('dosya').click(); }
+};
+$('kartlar').oninput = ev => {
+  const el = ev.target, f = el.dataset.f; if (!f) return;
+  const a = ed.alanlar[+el.closest('.fk').dataset.i];
+  if (f === 'etiket' || f === 'ipucu') a[f] = el.value;
+  else if (f === 'url') a.url = el.value.trim();
+  else if (f === 'zorunlu') a.zorunlu = el.checked;
+  else if (f === 'secenekler') a.secenekler = el.value.split('\n').map(s => s.trim()).filter(Boolean);
+};
+$('kartlar').onchange = ev => {
+  const el = ev.target, f = el.dataset.f; if (!f) return;
+  const k = el.closest('.fk'), i = +k.dataset.i, a = ed.alanlar[i];
+  if (f === 'tur') {
+    if (ed.kayit && ed.eski[a.ad] && ed.eski[a.ad] !== el.value && !confirm('Mevcut kayıtları olan bir alanın türünü değiştiriyorsunuz. Eski cevaplar olduğu gibi kalır. Devam?')) { el.value = a.tur; return; }
+    a.tur = el.value;
+    if (['secim', 'radyo', 'coktan'].includes(a.tur)) a.secenekler = a.secenekler || [];
+    if (FormUI.GOSTERIM.includes(a.tur)) { delete a.zorunlu; delete a.kosul; } else a.zorunlu = !!a.zorunlu;
+    telTcAd(a); kartCiz();
+  } else if (f === 'kosulAlan') { if (el.value) a.kosul = {alan: el.value, esit: []}; else delete a.kosul; kartCiz(); }
+  else if (f === 'kosulDeger') a.kosul.esit = [...k.querySelectorAll('[data-f=kosulDeger]:checked')].map(x => x.value);
+  else if (f === 'secenekler' || f === 'url') kartCiz();   // koşul seçenekleri / önizleme tazelensin
+};
+
+// sürükle-bırak (sürükleme sapı: ⠿)
+$('kartlar').ondragstart = ev => {
+  const t = ev.target.closest('.tut'); if (!t) return ev.preventDefault();
+  const k = t.closest('.fk'); sutur = +k.dataset.i; ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', String(sutur));
+  try { ev.dataTransfer.setDragImage(k, 20, 20); } catch (x) {}
+  k.classList.add('surukle');
+};
+$('kartlar').ondragover = ev => { if (sutur >= 0 && ev.target.closest('.fk')) ev.preventDefault(); };
+$('kartlar').ondrop = ev => { const k = ev.target.closest('.fk'); if (sutur < 0 || !k) return; ev.preventDefault(); const j = +k.dataset.i, i = sutur; sutur = -1; tasi(i, j); };
+$('kartlar').ondragend = () => { sutur = -1; document.querySelectorAll('.fk.surukle').forEach(k => k.classList.remove('surukle')); };
+
+// görsel yükleme: tarayıcıda küçült → Supabase Storage (form-medya)
+$('e-yukle').onclick = () => { yukleHedef = -1; $('dosya').click(); };
+$('dosya').onchange = async () => {
+  const dosya = $('dosya').files[0]; $('dosya').value = ''; if (!dosya) return;
+  $('e-hata').innerHTML = '<div class="kvkk">Görsel yükleniyor…</div>';
+  try {
+    const bmp = await createImageBitmap(dosya), o = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    const cv = document.createElement('canvas'); cv.width = Math.round(bmp.width * o); cv.height = Math.round(bmp.height * o);
+    const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(bmp, 0, 0, cv.width, cv.height);
+    const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', .85));
+    const ad = Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + '.jpg';
+    const r = await fetch(CFG.URL + '/storage/v1/object/form-medya/' + ad, {method: 'POST', headers: {apikey: CFG.ANON, Authorization: 'Bearer ' + tok, 'Content-Type': 'image/jpeg'}, body: blob});
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || r.status);
+    const url = CFG.URL + '/storage/v1/object/public/form-medya/' + ad;
+    if (yukleHedef === -1) $('e-kapak').value = url; else { ed.alanlar[yukleHedef].url = url; kartCiz(); }
+    $('e-hata').innerHTML = '<div class="kvkk" style="color:var(--g700)">Görsel yüklendi.</div>';
+  } catch (e) { $('e-hata').innerHTML = '<div class="kutu-hata">Görsel yüklenemedi: ' + esc(e.message) + '</div>'; }
+};
+
+// toplama + doğrulama
+function topla(siki) {
+  const hatalar = [];
+  const baslik = $('e-baslik').value.trim();
+  if (siki && !baslik) hatalar.push('Başlık gerekli.');
+  const alanlar = ed.alanlar.map(a => {
+    const c = {...a}; delete c.yeni;
+    c.etiket = (c.etiket || '').trim();
+    if (!c.ipucu) delete c.ipucu; else c.ipucu = c.ipucu.trim();
+    if (['secim', 'radyo', 'coktan'].includes(c.tur)) { if (siki && (c.secenekler || []).length < 2) hatalar.push(`"${c.etiket || 'Seçim alanı'}" için en az 2 seçenek yazın.`); } else delete c.secenekler;
+    if (c.tur === 'gorsel' && siki && !FormUI.gorselGuvenli(c.url)) hatalar.push('Görsel alanında https:// adresi ya da yüklenmiş görsel gerekli.');
+    if (c.tur === 'video' && siki && !FormUI.videoGomme(c.url)) hatalar.push('Video için geçerli bir YouTube ya da Vimeo bağlantısı gerekli.');
+    if (!['gorsel', 'video'].includes(c.tur)) { delete c.url; if (siki && !c.etiket) hatalar.push('Etiketi boş bir alan var.'); }
+    if (c.kosul && !(c.kosul.esit || []).length) { if (siki) hatalar.push(`"${c.etiket}" koşulu için en az bir değer işaretleyin ya da "Her zaman" seçin.`); delete c.kosul; }
+    return c;
+  });
+  const adlar = alanlar.map(a => a.ad); if (siki && new Set(adlar).size !== adlar.length) hatalar.push('Alan adları çakışıyor.');
+  if (siki && !alanlar.some(a => !FormUI.GOSTERIM.includes(a.tur))) hatalar.push('En az bir soru alanı ekleyin.');
+  const kont = $('e-kont').value.trim();
+  if (siki && kont && (!(+kont > 0) || !Number.isInteger(+kont))) hatalar.push('Kontenjan 1 ya da daha büyük bir tam sayı olmalı.');
+  const bas = $('e-bas').value ? new Date($('e-bas').value).toISOString() : null, bit = $('e-bit').value ? new Date($('e-bit').value).toISOString() : null;
+  if (siki && bas && bit && new Date(bas) >= new Date(bit)) hatalar.push('Bitiş, başlangıçtan sonra olmalı.');
+  return {hatalar, veri: {baslik, aciklama: $('e-acik').value.trim() || null, kapak: $('e-kapak').value.trim() || null, kontenjan: kont ? +kont : null, baslangic: bas, bitis: bit, alanlar, tekil_alan: tekilTc(alanlar)}};
+}
+$('e-kaydet').onclick = async () => {
+  const {hatalar, veri} = topla(true);
+  if (veri.kapak && !FormUI.gorselGuvenli(veri.kapak)) hatalar.push('Kapak görseli https:// ile başlamalı.');
+  if (hatalar.length) return $('e-hata').innerHTML = '<div class="kutu-hata">' + hatalar.map(esc).join('<br>') + '</div>';
+  if (ed.id && ed.kayit) {   // kayıtlı forma dokunuluyor: kaldırılan alan ve kontenjan uyarısı
+    const kalan = new Set(veri.alanlar.map(a => a.ad));
+    const gidenler = Object.keys(ed.eski).filter(k => !kalan.has(k));
+    if (veri.kontenjan && veri.kontenjan < ed.kayit && !confirm(`Kontenjan (${veri.kontenjan}) mevcut kayıt sayısından (${ed.kayit}) az; form yeni kayıt almaz. Devam?`)) return;
+    if (gidenler.length && !confirm('Kaldırılan alanların eski cevapları tabloda görünmez olur (veri silinmez). Kaydedilsin mi?')) return;
+  }
+  $('e-kaydet').disabled = true;
+  try {
+    if (ed.id) await api('etkinlik?id=eq.' + ed.id, {method: 'PATCH', body: JSON.stringify(veri)});
+    else await api('etkinlik', {method: 'POST', headers: {Prefer: 'return=minimal'}, body: JSON.stringify({slug: bosSlug(veri.baslik), ...veri})});
+    $('duzenle').hidden = true; $('liste-gor').hidden = false; ed = null;
+    await ac(); durum('Form kaydedildi.');
+  } catch (e) { $('e-hata').innerHTML = '<div class="kutu-hata">Kaydedilemedi: ' + esc(e.message) + '</div>'; }
+  $('e-kaydet').disabled = false;
+};
+
+// önizleme (gönderim yok)
+let onz = null, onzAdim = 0;
+$('e-onizle').onclick = () => {
+  if (!$('onizleme').hidden) return ($('onizleme').hidden = true);
+  const {veri} = topla(false);
+  onz = FormUI.ciz({alanlar: veri.alanlar}, $('o-kap')); onzAdim = 0;
+  const kapak = FormUI.gorselGuvenli(veri.kapak);
+  $('o-kap').insertAdjacentHTML('afterbegin', `${kapak ? `<img class="kapak" src="${esc(kapak)}" alt="">` : ''}<h1>${esc(veri.baslik || 'Başlık')}</h1>${veri.aciklama ? `<p class="alt">${esc(veri.aciklama)}</p>` : ''}${veri.kontenjan ? `<p class="kalan">Kalan kontenjan: <b>${veri.kontenjan}</b></p>` : ''}`);
+  onzGit(0); $('onizleme').hidden = false; $('onizleme').scrollIntoView({behavior: 'smooth'});
+};
+function onzGit(i) { onzAdim = i; onz.goster(i); $('o-geri').hidden = i === 0; $('o-ileri').textContent = i === onz.say - 1 ? 'Kaydı Gönder (önizleme)' : 'İleri'; $('o-ileri').disabled = i === onz.say - 1; }
+$('o-geri').onclick = () => onzGit(onzAdim - 1);
+$('o-ileri').onclick = () => { if (onzAdim < onz.say - 1) onzGit(onzAdim + 1); };
+
+setInterval(() => { if (tok && !$('panel').hidden && !$('v-sonuc').hidden && !document.hidden && !document.querySelector('[data-evet]')) sec().catch(() => {}); }, 30000);
 if (tok) ac().catch(() => {});
 </script>
 </body></html>

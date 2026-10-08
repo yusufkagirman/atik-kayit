@@ -18,18 +18,18 @@
 
   <!-- ANA -->
   <section id="ana" hidden>
-    <div class="sayilar">
+    <div class="sayilar kadro">
       <div class="sayi"><b id="sFaal">0</b><span>Bu ay faaliyet</span></div>
       <div class="sayi"><b id="sKat">0</b><span>Bu ay katılım</span></div>
       <div class="sayi"><b id="sHar">0 ₺</b><span>Bu ay harcama</span></div>
     </div>
-    <button class="btn ana tam" id="yeniBtn" style="min-height:58px;font-size:17px;margin-bottom:14px">＋ Yeni faaliyet raporu</button>
+    <button class="btn ana tam kadro" id="yeniBtn" style="min-height:58px;font-size:17px;margin-bottom:14px">＋ Yeni faaliyet raporu</button>
     <div id="vekilKartlar"></div>
     <div class="kart">
       <h2>Raporlarım <small id="gunlerYazi"></small></h2>
       <div id="raporListe"></div>
     </div>
-    <div class="kart">
+    <div class="kart kadro">
       <h2>Ekip üyelerim <small id="uyeSay"></small></h2>
       <div id="uyeListeAna" class="cipler"></div>
       <p class="not">Liste kulüp kayıt sisteminden otomatik gelir. Eksik ya da yanlış biri varsa Lider Paneli'nden kaydını düzelt; birkaç dakikada burada görünür.</p>
@@ -134,6 +134,7 @@ async function yukle() {
   $('ekipAd').textContent = V.ekip.ad;
   $('selam').textContent = V.ekip.lider_ad ? 'Selam ' + V.ekip.lider_ad.split(' ')[0] + ' 👋' : 'ATİK Ekip Takip';
   $('gunlerYazi').textContent = V.ekip.gunler.length ? '· ' + V.ekip.gunler.map(g => GUN[g]).join(', ') : '';
+  for (const el of document.querySelectorAll('#ana .kadro')) el.hidden = !!V.kisi; // ekibi olmayan vekil yalnız vekalet kartını görür
   anaCiz();
 }
 function hataGoster(m) { $('hata').hidden = false; $('hataMetin').textContent = m; $('ekipAd').textContent = 'ATİK Ekip Takip'; }
@@ -149,7 +150,7 @@ function anaCiz() {
     return `<div class="liste-oge" data-id="${r.id}"><div class="tarih"><b>${+d}</b><small>${AY[m - 1]}</small></div>
       <div class="govde"><b>${adina}${yok ? 'Faaliyet yapılmadı' : esc(r.tur || 'Faaliyet') + (r.yer ? ' · ' + esc(r.yer) : '')}</b><span>${yok ? esc(r.ozet) : `${r.katilim} kişi · ${tl(r.toplam)}${foto ? ' · 📷 ' + foto : ''}`}</span></div>
       ${r.durum === 'taslak' ? '<span class="rozet taslak">Taslak</span>' : yok ? '<span class="rozet gri">Yok</span>' : '<span class="rozet">✓</span>'}</div>`;
-  }).join('') : '<div class="bos">Henüz rapor yok. İlk faaliyetini ekle!</div>';
+  }).join('') : `<div class="bos">${V.kisi ? 'Vekil olduğun ekip için rapor girişi yukarıdaki kartta. Kart yoksa yönetim henüz vekalet atamamıştır.' : 'Henüz rapor yok. İlk faaliyetini ekle!'}</div>`;
   $('vekilKartlar').innerHTML = V.vekaletler.map(v => `<div class="kart vekil-kart"><h2>${esc(v.ad)} adına <small>${trKisa(v.bas)} – ${trKisa(v.bit)}</small></h2>
     <p class="not" style="margin:0 0 12px">Yönetim bu ekibin raporunu girmeni istedi${v.lider_ad ? ' (' + esc(v.lider_ad) + ' yerine)' : ''}.</p>
     <button class="btn ana tam" data-vekil="${v.ekip_id}">＋ ${esc(v.ad)} için rapor gir</button></div>`).join('');

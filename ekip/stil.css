@@ -68,10 +68,27 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--g600);bo
 .sekme-cubuk{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;margin-bottom:14px;box-shadow:var(--golge)}
 .sekme-cubuk button{flex:1;border:0;background:none;border-radius:999px;min-height:40px;font:700 14px Manrope,system-ui,sans-serif;color:var(--ink2);cursor:pointer}
 .sekme-cubuk button.secili{background:var(--g700);color:#fff}
-.bildirim{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:50;box-shadow:var(--golge);max-width:calc(100% - 32px);text-align:center}
-.bildirim.hata{background:var(--hata)}
-.kutu-hata{background:var(--hata50);color:var(--hata);border-radius:14px;padding:14px 16px;font-weight:700}
+.bildirim{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;font-weight:600;font-size:14px;line-height:1.45;z-index:50;box-shadow:0 10px 30px -12px rgba(0,0,0,.4);width:max-content;max-width:min(440px,calc(100% - 32px));text-align:left;cursor:pointer}
+.bildirim.hata{background:#fff;color:var(--ink);border:1px solid var(--line);border-left:3px solid var(--hata);font-weight:500}
+.kutu-hata{background:var(--hata50);color:var(--hata);border-left:3px solid var(--hata);border-radius:8px;padding:10px 14px;font-weight:600;font-size:14px;line-height:1.45}
+/* pencere açıkken arkadaki sayfa kaymaz */
+html:has(dialog[open]){overflow:hidden}
+dialog{overscroll-behavior:contain}
 .basari{text-align:center;padding:30px 14px}
 .basari .isaret{width:64px;height:64px;border-radius:50%;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:32px}
 .not{font-size:12.5px;color:var(--ink3);margin-top:6px}
 @media (max-width:420px){.sayi b{font-size:19px}.uye-liste{grid-template-columns:1fr}}
+/* özel onay penceresi (onay.js) */
+dialog.onay{border:0;border-radius:20px;padding:0;width:min(400px,calc(100% - 32px));box-shadow:0 30px 80px rgba(0,0,0,.3);color:var(--ink)}
+dialog.onay::backdrop{background:rgba(15,30,20,.5);backdrop-filter:blur(3px)}
+.onay-ic{padding:22px}
+.onay-ic p{margin:0 0 18px;font-size:16px;font-weight:600;line-height:1.45}
+.onay-bt{display:flex;gap:10px;justify-content:flex-end}
+.onay-bt .btn{flex:1}
+.btn.tehlike{background:var(--hata);border-color:var(--hata);color:#fff}.btn.tehlike:hover{background:#8f281e}
+@media (max-width:560px){dialog.onay{margin:auto auto 0;width:100%;max-width:none;border-radius:22px 22px 0 0}.onay-ic{padding:22px 16px calc(18px + env(safe-area-inset-bottom))}}
+/* yer çipleri, vekalet */
+.vekil-kart{border-color:var(--alt);background:var(--alt50)}
+.vekil-kart h2{color:#8a5a12}
+.alan-bar{display:flex;gap:8px;flex-wrap:wrap}
+.iki-sat{display:grid;grid-template-columns:1fr 1fr;gap:8px}

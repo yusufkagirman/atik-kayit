@@ -270,9 +270,11 @@ function tekilTc(alanlar) { return alanlar.some(a => a.ad === 'tc' && a.tur === 
 $('olustur').onclick = async () => {
   const baslik = $('nb').value.trim(); if (!baslik) return alert('Başlık gerekli.');
   const alanlar = $('nal').value.split('\n').map(s => s.trim()).filter(Boolean).map((s, i) => {
-    const p = s.split('|').map(x => x.trim());
-    return {ad: 'a' + (i + 1), etiket: p[0], tur: p[1] || 'metin', zorunlu: p[2] === '*', ...(p[3] ? {secenekler: p[3].split(',').map(x => x.trim()).filter(Boolean)} : {})};
+    const p = s.split('|').map(x => x.trim()), ek = p.slice(2), sec = ek.find(x => x && x !== '*');
+    return {ad: 'a' + (i + 1), etiket: p[0], tur: p[1] || 'metin', zorunlu: ek.includes('*'), ...(sec ? {secenekler: sec.split(',').map(x => x.trim()).filter(Boolean)} : {})};
   });
+  const hata = alanlar.map(a => !a.etiket ? 'Etiketi boş bir satır var.' : !TUR[a.tur] || FormUI.GOSTERIM.includes(a.tur) ? `"${a.etiket}": "${a.tur}" geçerli bir tür değil.` : ['secim', 'radyo', 'coktan'].includes(a.tur) && (a.secenekler || []).length < 2 ? `"${a.etiket}" için en az 2 seçenek yazın (| A, B).` : '').find(Boolean);
+  if (hata) return alert(hata);
   const tc = alanlar.find(a => a.tur === 'tc'); if (tc) tc.ad = 'tc';
   const tl = alanlar.find(a => a.tur === 'tel'); if (tl) tl.ad = 'tel';
   try {

@@ -24,7 +24,6 @@
       <div class="sayi"><b id="sHar">0 ₺</b><span>Bu ay harcama</span></div>
     </div>
     <button class="btn ana tam kadro" id="yeniBtn" style="min-height:58px;font-size:17px;margin-bottom:14px">＋ Yeni faaliyet raporu</button>
-    <div id="vekilKartlar"></div>
     <div class="kart">
       <h2>Raporlarım <small id="gunlerYazi"></small></h2>
       <div id="raporListe"></div>
@@ -40,7 +39,6 @@
   <section id="form" hidden>
     <div class="kart">
       <h2 id="formBaslik">Yeni faaliyet</h2>
-      <p class="not" id="adinaYazi" hidden style="margin:-6px 0 12px;font-weight:700;color:#8a5a12"></p>
       <div class="iki">
         <div class="alan"><label class="et" for="fTarih">Tarih</label><input type="date" id="fTarih"></div>
         <div class="alan faal"><label class="et" for="fSure">Süre (dakika)</label><input type="number" id="fSure" inputmode="numeric" min="0" max="1440" placeholder="90"></div>
@@ -110,7 +108,6 @@ let V = null, HEDEF = null, yerSec = '', duzenlenen = null, secili = new Set(), 
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const tl = n => Number(n || 0).toLocaleString('tr-TR', {maximumFractionDigits: 2}) + ' ₺';
-const trKisa = s => { const [y, m, d] = s.split('-'); return +d + ' ' + AY[m - 1]; };
 const bugun = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 
 function bildir(m, hata) { const b = $('bildirim'); b.textContent = m; b.className = 'bildirim' + (hata ? ' hata' : ''); b.hidden = false; clearTimeout(b._t); b._t = setTimeout(() => b.hidden = true, hata ? Math.max(6500, String(m).length * 60) : 3200); b.onclick = () => b.hidden = true; }
@@ -134,7 +131,6 @@ async function yukle() {
   $('ekipAd').textContent = V.ekip.ad;
   $('selam').textContent = V.ekip.lider_ad ? 'Selam ' + V.ekip.lider_ad.split(' ')[0] + ' 👋' : 'ATİK Ekip Takip';
   $('gunlerYazi').textContent = V.ekip.gunler.length ? '· ' + V.ekip.gunler.map(g => GUN[g]).join(', ') : '';
-  for (const el of document.querySelectorAll('#ana .kadro')) el.hidden = !!V.kisi; // ekibi olmayan vekil yalnız vekalet kartını görür
   anaCiz();
 }
 function hataGoster(m) { $('hata').hidden = false; $('hataMetin').textContent = m; $('ekipAd').textContent = 'ATİK Ekip Takip'; }
@@ -146,14 +142,11 @@ function anaCiz() {
   $('sHar').textContent = tl(buAy.reduce((a, r) => a + Number(r.toplam), 0));
   $('raporListe').innerHTML = V.raporlar.length ? V.raporlar.map(r => {
     const [y, m, d] = r.tarih.split('-'), foto = r.medya.filter(x => x.t === 'foto').length;
-    const adina = r.ekip_id !== V.ekip.id ? esc(r.ekip_ad) + ' adına · ' : '', yok = r.durum === 'yapilmadi';
+    const yok = r.durum === 'yapilmadi';
     return `<div class="liste-oge" data-id="${r.id}"><div class="tarih"><b>${+d}</b><small>${AY[m - 1]}</small></div>
-      <div class="govde"><b>${adina}${yok ? 'Faaliyet yapılmadı' : esc(r.tur || 'Faaliyet') + (r.yer ? ' · ' + esc(r.yer) : '')}</b><span>${yok ? esc(r.ozet) : `${r.katilim} kişi · ${tl(r.toplam)}${foto ? ' · 📷 ' + foto : ''}`}</span></div>
+      <div class="govde"><b>${yok ? 'Faaliyet yapılmadı' : esc(r.tur || 'Faaliyet') + (r.yer ? ' · ' + esc(r.yer) : '')}</b><span>${yok ? esc(r.ozet) : `${r.katilim} kişi · ${tl(r.toplam)}${foto ? ' · 📷 ' + foto : ''}`}</span></div>
       ${r.durum === 'taslak' ? '<span class="rozet taslak">Taslak</span>' : yok ? '<span class="rozet gri">Yok</span>' : '<span class="rozet">✓</span>'}</div>`;
-  }).join('') : `<div class="bos">${V.kisi ? 'Vekil olduğun ekip için rapor girişi yukarıdaki kartta. Kart yoksa yönetim henüz vekalet atamamıştır.' : 'Henüz rapor yok. İlk faaliyetini ekle!'}</div>`;
-  $('vekilKartlar').innerHTML = V.vekaletler.map(v => `<div class="kart vekil-kart"><h2>${esc(v.ad)} adına <small>${trKisa(v.bas)} – ${trKisa(v.bit)}</small></h2>
-    <p class="not" style="margin:0 0 12px">Yönetim bu ekibin raporunu girmeni istedi${v.lider_ad ? ' (' + esc(v.lider_ad) + ' yerine)' : ''}.</p>
-    <button class="btn ana tam" data-vekil="${v.ekip_id}">＋ ${esc(v.ad)} için rapor gir</button></div>`).join('');
+  }).join('') : `<div class="bos">'Henüz rapor yok. İlk faaliyetini ekle!'</div>`;
   $('uyeSay').textContent = V.uyeler.length + ' kişi';
   $('uyeListeAna').innerHTML = V.uyeler.map(u => `<span class="cip">${esc(u.ad)}</span>`).join('') || '<span class="not">Kayıt sisteminde bu ekipte henüz öğrenci yok.</span>';
   const ikramlar = [...new Set(V.raporlar.map(r => r.ikram).filter(Boolean))];
@@ -162,7 +155,6 @@ function anaCiz() {
 }
 
 $('raporListe').onclick = e => { const o = e.target.closest('.liste-oge'); if (o) formAc(V.raporlar.find(r => r.id === o.dataset.id)); };
-$('vekilKartlar').onclick = e => { const b = e.target.closest('[data-vekil]'); if (b) formAc(null, b.dataset.vekil); };
 
 // ---------- FORM ----------
 $('turCip').innerHTML = TURLER.map(t => `<button type="button" class="cip">${t}</button>`).join('');
@@ -191,16 +183,9 @@ function yokCiz() {
 }
 $('fYok').onchange = () => { yokCiz(); kirli = true; };
 
-function formAc(r, adinaId) {
+function formAc(r) {
   duzenlenen = r || null;
-  const hedefId = r ? r.ekip_id : (adinaId || V.ekip.id);
-  if (hedefId === V.ekip.id) HEDEF = {id: V.ekip.id, ad: V.ekip.ad, uyeler: V.uyeler};
-  else {
-    const v = V.vekaletler.find(x => x.ekip_id === hedefId);
-    if (!v) return bildir('Bu rapor başka bir ekibe ait; vekalet süresi bittiği için düzenlenemez.', 1);
-    HEDEF = {id: v.ekip_id, ad: v.ad, uyeler: v.uyeler};
-  }
-  $('adinaYazi').hidden = HEDEF.id === V.ekip.id; $('adinaYazi').textContent = HEDEF.ad + ' adına rapor giriyorsun';
+  HEDEF = {id: V.ekip.id, ad: V.ekip.ad, uyeler: V.uyeler};
   $('fYok').checked = r?.durum === 'yapilmadi';
   $('formBaslik').textContent = r ? (r.durum === 'taslak' ? 'Taslağı tamamla' : 'Raporu düzenle') : 'Yeni faaliyet';
   $('fTarih').value = r?.tarih || bugun();
@@ -286,7 +271,7 @@ async function kaydet(durum) {
   if (yukleniyor) return bildir('Fotoğraflar yükleniyor, birazdan tekrar dene.', 1);
   const videolar = $('fVideo').value.split('\n').map(s => s.trim()).filter(Boolean);
   if (videolar.some(v => !/^https?:\/\//i.test(v))) return bildir('Video linkleri http ile başlamalı.', 1);
-  const d = {tarih: $('fTarih').value, tur: $('fTur').value.trim(), yer: yerOku(), adina: HEDEF.id === V.ekip.id ? null : HEDEF.id, sure_dk: $('fSure').value, ozet: $('fOzet').value.trim(), ikram: $('fIkram').value.trim(),
+  const d = {tarih: $('fTarih').value, tur: $('fTur').value.trim(), yer: yerOku(), sure_dk: $('fSure').value, ozet: $('fOzet').value.trim(), ikram: $('fIkram').value.trim(),
     katilanlar: [...secili], ek_katilimci: parseInt($('fEk').value) || 0, harcama: harcamaOku(), medya: [...medya, ...videolar.map(url => ({t: 'video', url}))], durum};
   if (!d.tarih) return bildir('Tarih seç.', 1);
   if (durum === 'yapilmadi') { if (!d.ozet) return bildir('"Neden yapılmadı?" kısmını yaz.', 1); }

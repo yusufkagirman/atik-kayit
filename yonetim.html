@@ -167,11 +167,24 @@ async function tumKayit(id) {
     if (!s || s.length < 1000) return hepsi;
   }
 }
+// Kulüp üyeliği: TC'yi kayıt sisteminin aynası (ogrenci, Atikder-Kayit'ten senkron) ile eşler. TC alanı olmayan formda yok.
+let uyeTc = {};
+async function uyelerAl() {
+  const m = {}, lider = {};
+  for (const e of await api('ekip?aktif=eq.true&select=ad,lider_ad', {cache: 'no-store'}) || []) lider[e.ad] = e.lider_ad;
+  for (let n = 0; ; n += 1000) {
+    const s = await api('ogrenci?aktif=eq.true&select=tc,ekip_ad', {cache: 'no-store', headers: {Range: `${n}-${n + 999}`, 'Range-Unit': 'items'}});
+    for (const o of s || []) if (o.tc) m[o.tc] = o.ekip_ad + (lider[o.ekip_ad] ? ' (Lider: ' + lider[o.ekip_ad] + ')' : '');
+    if (!s || s.length < 1000) return m;
+  }
+}
+const tcAlani = e => veriliAlan(e).find(a => a.tur === 'tc');
+const uyelik = (e, k) => { const a = tcAlani(e), t = a && String(k.veri[a.ad] || ''); return !a ? null : t in uyeTc ? 'Üye · ' + (uyeTc[t] || 'ekipsiz') : 'Üye değil'; };
 async function sec() {
   const e = sc(); if (!e) return;
   $('kapat').textContent = e.acik ? 'Kaydı kapat' : 'Kaydı aç';
   $('lnk').innerHTML = 'Veli linki: <b>' + esc(dizin + 'form.html?e=' + e.slug) + '</b>';
-  kayitlar = await tumKayit(e.id);
+  [kayitlar, uyeTc] = await Promise.all([tumKayit(e.id), tcAlani(e) ? uyelerAl().catch(() => uyeTc) : uyeTc]);
   sayilar[e.id] = kayitlar.length;
   ciz();
   durum('Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR'));
@@ -180,8 +193,9 @@ function ciz() {
   const e = sc(), q = $('ara').value.toLowerCase(), al = veriliAlan(e);
   const f = kayitlar.filter(k => !q || JSON.stringify(k.veri).toLowerCase().includes(q));
   $('say').textContent = f.length + ' kayıt' + (e.kontenjan ? ` / kontenjan ${e.kontenjan}` : '') + (e.kontenjan && kayitlar.length >= e.kontenjan ? ' (DOLU)' : '');
-  $('tb').innerHTML = `<tr><th>#</th>${al.map(a => `<th>${esc(a.etiket)}</th>`).join('')}<th>Zaman</th><th></th></tr>` +
-    f.map((k, i) => `<tr><td>${f.length - i}</td>${al.map(a => `<td${a.ad === e.tekil_alan ? '' : ` data-k="${k.id}" data-a="${esc(a.ad)}"`}>${esc(k.veri[a.ad])}</td>`).join('')}<td>${new Date(k.olusma).toLocaleString('tr-TR')}</td><td><button class="sil" data-sil="${k.id}">Sil</button></td></tr>`).join('');
+  const uyeSutun = !!tcAlani(e);
+  $('tb').innerHTML = `<tr><th>#</th>${al.map(a => `<th>${esc(a.etiket)}</th>`).join('')}${uyeSutun ? '<th>Kulüp</th>' : ''}<th>Zaman</th><th></th></tr>` +
+    f.map((k, i) => `<tr><td>${f.length - i}</td>${al.map(a => `<td${a.ad === e.tekil_alan ? '' : ` data-k="${k.id}" data-a="${esc(a.ad)}"`}>${esc(k.veri[a.ad])}</td>`).join('')}${uyeSutun ? `<td>${esc(uyelik(e, k))}</td>` : ''}<td>${new Date(k.olusma).toLocaleString('tr-TR')}</td><td><button class="sil" data-sil="${k.id}">Sil</button></td></tr>`).join('');
   ozetCiz(e);
 }
 function ozetCiz(e) {
@@ -222,8 +236,9 @@ $('csv').onclick = async () => {
   try { kayitlar = await tumKayit(sc().id); ciz(); } catch (x) { return durum('CSV için kayıtlar alınamadı: ' + x.message, true); }
   const e = sc(), al = veriliAlan(e), q = c => '"' + String(c ?? '').replace(/"/g, '""') + '"';
   const hucre = (a, v) => { v = v ?? ''; if (/^[=+\-@]/.test(v)) v = "'" + v; return (a.tur === 'tc' || a.tur === 'tel') && v ? '="' + v + '"' : q(v); };
-  const satir = ['sep=;', al.map(a => q(a.etiket)).concat(q('Zaman')).join(';')]
-    .concat(kayitlar.map(k => al.map(a => hucre(a, k.veri[a.ad])).concat(q(new Date(k.olusma).toLocaleString('tr-TR'))).join(';')));
+  const uy = !!tcAlani(e);
+  const satir = ['sep=;', al.map(a => q(a.etiket)).concat(uy ? [q('Kulüp')] : [], q('Zaman')).join(';')]
+    .concat(kayitlar.map(k => al.map(a => hucre(a, k.veri[a.ad])).concat(uy ? [q(uyelik(e, k))] : [], q(new Date(k.olusma).toLocaleString('tr-TR'))).join(';')));
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿' + satir.join('\r\n')], {type: 'text/csv;charset=utf-8'}));
   const z = new Date(), p = n => String(n).padStart(2, '0');

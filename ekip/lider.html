@@ -103,7 +103,7 @@ const $ = id => document.getElementById(id);
 const TOKEN = new URLSearchParams(location.search).get('k') || '';
 const GUN = ['', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 const AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
-const YERLER = ['Saadetdere Merkez', 'Avcılar Kulüp', 'Avcılar Dernek'];
+const YERLER = ['Saadetdere Merkez', 'Avcılar Kulüp', 'Avcılar Dernek', 'İbrahim Cevahir Cami'];
 const TURLER = ['Sohbet', 'Spor', 'Gezi', 'Okuma / Ders', 'Kamp', 'Ziyaret', 'Yardım', 'Eğlence'];
 const HATALAR = {gecersiz_link: 'Bu link geçersiz ya da kapatılmış. Yönetimden yeni link iste.', tarih_gecersiz: 'Tarih geçersiz (en fazla 120 gün geriye girilebilir).', tutar_gecersiz: 'Harcama tutarı geçersiz.', ad_gecersiz: 'Ad geçersiz.', rapor_yok: 'Rapor bulunamadı.', vekalet_yok: 'Bu ekip adına rapor girme yetkin yok ya da tarih vekalet aralığı dışında.'};
 let V = null, HEDEF = null, yerSec = '', duzenlenen = null, secili = new Set(), medya = [], onizleme = {}, kirli = false, yukleniyor = 0;
@@ -170,7 +170,7 @@ $('turCip').onclick = e => { const c = e.target.closest('.cip'); if (!c) return;
 $('fTur').oninput = turCiz;
 function turCiz() { for (const c of $('turCip').children) c.classList.toggle('secili', c.textContent === $('fTur').value); }
 
-// Yer: üç sabit konum + "Başka konum" (serbest metin)
+// Yer: dört sabit konum + "Başka konum" (serbest metin)
 const DIGER = 'Başka konum';
 $('yerCip').innerHTML = [...YERLER, DIGER].map(t => `<button type="button" class="cip">${t}</button>`).join('');
 $('yerCip').onclick = e => { const c = e.target.closest('.cip'); if (!c) return; yerAyarla(c.textContent === yerSec && c.textContent !== DIGER ? '' : c.textContent); kirli = true; if (yerSec === DIGER) $('fYer').focus(); };

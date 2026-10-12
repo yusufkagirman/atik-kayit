@@ -92,3 +92,31 @@ dialog.onay::backdrop{background:rgba(15,30,20,.5);backdrop-filter:blur(3px)}
 .vekil-kart h2{color:#8a5a12}
 .alan-bar{display:flex;gap:8px;flex-wrap:wrap}
 .iki-sat{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* ETS: kurumsal selam, sekmeler, akış, duyuru */
+.bas-selam{max-width:640px;margin:10px auto 0;font-size:14.5px;font-weight:600;opacity:.95}
+.sekme-cubuk button{position:relative}
+.nokta{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:99px;background:var(--hata);color:#fff;font:700 11px/1 Manrope,system-ui,sans-serif;font-style:normal}
+.akis-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 2px 12px}
+.post-ust{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.post-kim{min-width:0}.post-kim b{display:block;font-size:15.5px;line-height:1.3}
+.post-kim small{color:var(--ink3);font-weight:600;font-size:12.5px}
+.avatar{flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px}
+.avatar.kucuk{flex-basis:32px;width:32px;height:32px;font-size:14px}
+.avatar.duyuru-simge{background:var(--alt50);font-size:20px}
+.post-etiket{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.post-etiket:empty{display:none}
+.post-metin{margin:0 0 10px;white-space:pre-wrap;color:var(--ink);overflow-wrap:anywhere}
+.post-meta{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:13px;color:var(--ink3);font-weight:600;margin-bottom:12px}
+.tepkiler{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px solid var(--line);padding-top:12px}
+.tepki{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);background:#fff;border-radius:999px;min-height:36px;padding:0 11px;font-size:16px;cursor:pointer}
+.tepki b{font-size:13px;color:var(--ink2)}
+.tepki.benim{background:var(--g100);border-color:var(--g600)}.tepki.benim b{color:var(--g700)}
+.yorum-ac{margin-left:auto;border:0;background:none;font:700 13.5px Manrope,system-ui,sans-serif;color:var(--ink2);cursor:pointer;min-height:36px;padding:0 6px}
+.yorumlar{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.yorum{display:flex;gap:10px;margin-bottom:12px}
+.yorum-ic{flex:1;min-width:0;background:var(--g50);border-radius:14px;padding:8px 12px}
+.yorum-ic b{font-size:13.5px}.yorum-ic small{color:var(--ink3);font-weight:600;font-size:12px}
+.yorum-ic p{margin:2px 0 0;font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.yorum-sil{border:0;background:none;color:var(--ink3);font-size:20px;cursor:pointer;align-self:flex-start;min-width:32px;min-height:32px}
+.yorum-yaz{display:flex;gap:8px}.yorum-yaz input{min-height:42px;font-size:15px}
+.duyuru.yeni{border-color:var(--alt);box-shadow:0 0 0 3px var(--alt50),var(--golge)}
+.yorum-satir{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;background:var(--g50);border-radius:12px;padding:8px 12px;margin-bottom:8px;font-size:14px}

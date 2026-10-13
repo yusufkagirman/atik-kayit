@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0f3f27">
 <title>ATİK ETS · Lider Paneli</title>
 <link rel="icon" href="logo.png">
-<link rel="stylesheet" href="stil.css?v=3">
+<link rel="stylesheet" href="stil.css?v=5">
 <script src="config.js?v=1"></script>
 <script src="onay.js?v=1"></script>
 </head>
@@ -142,6 +142,7 @@ function goster(id) {
   $('formCubuk').hidden = id !== 'form';
   $('sekme').hidden = !SEKMELER.includes(id) || !V;
   for (const b of $('sekme').children) b.classList.toggle('secili', b.dataset.s === id);
+  if (SEKMELER.includes(id)) $('sekme').style.setProperty('--i', SEKMELER.indexOf(id));
   scrollTo(0, 0);
 }
 

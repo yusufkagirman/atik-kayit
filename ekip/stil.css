@@ -190,6 +190,25 @@ dialog.onay::backdrop{background:rgba(15,30,20,.5);backdrop-filter:blur(3px)}
 .duyuru.yeni{box-shadow:0 0 0 1.5px var(--alt),0 0 0 5px var(--alt50),0 12px 28px -16px rgba(20,40,28,.18)}
 .yorum-satir{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;background:var(--g50);border-radius:12px;padding:9px 12px;margin-bottom:8px;font-size:14px}
 
+/* ---- ETS: sohbet ---- */
+.sohbet-liste{padding:6px 16px}
+.sohbet-oge:first-child{border-top:0}
+.sohbet-oge .govde{flex:1;min-width:0}
+.konusma-ust{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.konusma-ust .post-kim{flex:1}
+.mesajlar{background:var(--g50);border-radius:var(--r);box-shadow:var(--halka);padding:14px 12px;height:min(58dvh,520px);overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.mesajlar .bos{margin:auto}
+.gun-ayrac{align-self:center;font-size:12px;font-weight:700;color:var(--ink3);background:#fff;border-radius:999px;padding:3px 12px;margin:8px 0;box-shadow:var(--halka)}
+.mesaj{max-width:82%;align-self:flex-start;background:#fff;border-radius:16px 16px 16px 4px;padding:8px 12px;box-shadow:var(--halka)}
+.mesaj.benim{align-self:flex-end;background:#dcf3e4;border-radius:16px 16px 4px 16px}
+.mesaj p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.45}
+.mesaj small{display:flex;justify-content:flex-end;align-items:center;gap:4px;font-size:11px;color:var(--ink3);font-weight:600}
+.m-ad{display:block;font-size:12.5px;color:var(--g700);overflow-wrap:anywhere}.m-ad small{display:inline;color:var(--ink3)}
+.m-sil{border:0;background:none;color:var(--ink3);font-size:16px;line-height:1;min-width:28px;min-height:28px;cursor:pointer}
+.mesaj-yaz div{display:flex;gap:8px;align-items:flex-end}
+.mesaj-yaz textarea{min-height:48px;max-height:120px;resize:none;padding-top:12px}
+.mesaj-yaz .btn{flex:0 0 48px;padding:0}
+
 /* ---- vekil / yer ---- */
 .vekil-kart{background:var(--alt50);box-shadow:0 0 0 1px var(--alt),var(--golge)}
 .vekil-kart h2{color:#8a5a12}
@@ -202,3 +221,14 @@ dialog.onay::backdrop{background:rgba(15,30,20,.5);backdrop-filter:blur(3px)}
   *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;scroll-behavior:auto!important}
   .btn:active,.cip:active,.tepki:active,.uye:active{transform:none}
 }
+
+/* ---- PWA: kurulum bandı ---- */
+.kurulum{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;max-width:480px;margin:0 auto;display:flex;align-items:center;gap:10px;background:#fff;border-radius:18px;padding:10px 8px 10px 12px;box-shadow:0 0 0 1px var(--line2),0 18px 40px -12px rgba(15,40,25,.35);animation:ets-sheet 320ms var(--ease-drawer)}
+.kurulum img{width:40px;height:40px;border-radius:10px;flex:none}
+.kurulum p{margin:0;flex:1;font-size:13.5px;font-weight:600;line-height:1.35}
+.kurulum .btn{min-height:40px;padding:0 14px;flex:none}
+.kurulum .kapat{border:0;background:none;font-size:22px;color:var(--ink3);min-width:40px;min-height:40px;cursor:pointer}
+
+/* ---- bildirim daveti ---- */
+.bildirim-kart{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--g50);margin-bottom:14px}
+.bildirim-kart p{margin:0;flex:1 1 200px;font-size:14px;font-weight:600;line-height:1.4}

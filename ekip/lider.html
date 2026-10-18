@@ -12,10 +12,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ETS">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="stil.css?v=8">
+<link rel="preconnect" href="https://xudogjlcrlwumpmpzpcd.supabase.co" crossorigin>
+<link rel="preload" href="fontlar/manrope-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fontlar/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="stil.css?v=9">
 <script src="config.js?v=1"></script>
 <script src="onay.js?v=1"></script>
-<script src="pwa.js?v=2" defer></script>
+<script src="pwa.js?v=3" defer></script>
 </head>
 <body>
 <header class="bas-serit"><div class="bas-ic"><img src="logo.png" alt="ATİK"><div><small>ATİK · ETS Ekip Takip Sistemi</small><b id="ekipAd">Yükleniyor…</b></div></div><p class="bas-selam" id="selam" hidden></p></header>
@@ -178,6 +181,7 @@ async function yukle() {
   sohbetSayi();
   window.pushKur?.($('pushYer'), s => rpc('lider_push_kaydet', {t: TOKEN, endpoint_: s.endpoint, p256dh_: s.p256dh, auth_: s.auth}));
   const git = new URLSearchParams(location.search).get('s'); if (git === 'sohbet') sohbetAc(); else if (git === 'duyuru') duyuruAc();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && KANAL === null) { sohbetSayi(); duyuruYukle().catch(() => {}); } });
   setInterval(() => { if (!document.hidden && KANAL === null) { sohbetSayi(); if (!$('sohbet').hidden) sohbetAc(true); } }, 20000);
 }
 function hataGoster(m) { $('hata').hidden = false; $('hataMetin').textContent = m; $('ekipAd').textContent = 'ATİK ETS'; }
@@ -230,7 +234,7 @@ const AKIS_SAYFA = 30;
 
 async function akisAc() {
   goster('akis');
-  $('akisListe').innerHTML = '<div class="bos">Yükleniyor…</div>'; $('akisDaha').hidden = true;
+  $('akisListe').innerHTML = '<div class="iskelet"></div>'.repeat(3); $('akisDaha').hidden = true;
   try {
     AKIS = await rpc('lider_akis', {t: TOKEN, lim: AKIS_SAYFA, ofs: 0});
     akisBitti = AKIS.length < AKIS_SAYFA;
@@ -338,7 +342,7 @@ async function sohbetSayi() {
 // Ana ekran ikonundaki sayı: okunmamış sohbet + duyuru
 const rozetYaz = () => window.rozet?.((+$('sohbetSay').textContent || 0) * !$('sohbetSay').hidden + (+$('duyuruSay').textContent || 0) * !$('duyuruSay').hidden);
 async function sohbetAc(sessiz) {
-  if (!sessiz) { goster('sohbet'); $('sohbetListe').innerHTML = '<div class="bos">Yükleniyor…</div>'; }
+  if (!sessiz) { goster('sohbet'); $('sohbetListe').innerHTML = '<div class="iskelet kisa"></div>'.repeat(3); }
   await sohbetSayi();
   if ($('sohbet').hidden) return;
   $('sohbetListe').innerHTML = KANALLAR.map(k => `<div class="liste-oge sohbet-oge" data-k="${k.kanal}">
@@ -355,7 +359,7 @@ async function konusmaAc(kanal) {
   goster('konusma'); KANAL = kanal; MESAJ = [];
   $('konusmaAd').textContent = k.ad; $('konusmaAlt').textContent = k.grup ? 'Tüm liderler' : (k.lider_ad || 'Ekip lideri');
   $('konusmaAv').textContent = k.grup ? '👥' : k.ad.charAt(0);
-  $('mesajlar').innerHTML = '<div class="bos">Yükleniyor…</div>'; $('mesajGir').value = '';
+  $('mesajlar').innerHTML = '<div class="iskelet kisa" style="width:60%"></div><div class="iskelet kisa" style="width:70%;align-self:flex-end"></div>'; $('mesajGir').value = '';
   try { MESAJ = await rpc('lider_sohbet', {kanal_: kanal, t: TOKEN}); } catch (er) { bildir(er.message, 1); return; }
   if (KANAL !== kanal) return;
   mesajCiz(true); sohbetSayi();

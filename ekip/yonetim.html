@@ -12,10 +12,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ETS">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="stil.css?v=8">
+<link rel="preconnect" href="https://xudogjlcrlwumpmpzpcd.supabase.co" crossorigin>
+<link rel="preload" href="fontlar/manrope-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fontlar/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="stil.css?v=9">
 <script src="config.js?v=1"></script>
 <script src="onay.js?v=1"></script>
-<script src="pwa.js?v=2" defer></script>
+<script src="pwa.js?v=3" defer></script>
 <style>
 .bas-ic,.sayfa{max-width:1100px}
 .bas-ic{justify-content:space-between}.bas-ic>div{display:flex;align-items:center;gap:12px}
@@ -106,6 +109,7 @@ dialog::backdrop{background:rgba(15,30,20,.5);backdrop-filter:blur(3px)}
       <span class="bosluk"></span><button class="btn kucuk ana" id="rYeni">＋ Yeni rapor</button><button class="btn kucuk" id="csv">CSV indir</button>
     </div>
     <div class="izgara" id="raporlar"></div>
+    <button class="btn tam" id="daha" type="button" hidden style="margin-top:14px"></button>
   </section>
 
   <!-- EKİPLER -->
@@ -198,7 +202,17 @@ async function ac() {
   window.pushKur?.($('pushYer'), s => api('push_abone?on_conflict=endpoint', {method: 'POST', headers: {Prefer: 'resolution=merge-duplicates,return=minimal'}, body: JSON.stringify({ekip_id: null, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth})}));
 }
 function hepsiCiz() { genelCiz(); raporCiz(); ekipCiz(); duyuruCiz(); sohbetCiz(); }
-setInterval(async () => { if (tok && !$('dlg').open && document.visibilityState === 'visible' && !document.activeElement?.closest('#v-ekip, #v-duyuru')) { await veriCek().catch(() => {}); genelCiz(); raporCiz(); duyuruCiz(); sohbetCiz(); } }, 60000);
+// Veri imzası: rapor/mesaj/duyuru değişmediyse ekran yeniden çizilmez (kaydırma, açık liste, yazılan metin korunur).
+const imza = () => raporlar.length + '|' + raporlar.reduce((a, r) => r.guncelleme > a ? r.guncelleme : a, '') + '|' + mesajlar.length + (mesajlar.at(-1)?.id || '') + '|' + duyurular.length + '|' + yorumlar.length + '|' + tepkiler.length + '|' + okunanlar.length;
+let sonTazele = Date.now();
+async function tazele() {
+  if (!tok || $('dlg').open || document.visibilityState !== 'visible' || document.activeElement?.closest('#v-ekip, #v-duyuru')) return;
+  const onceki = imza(); sonTazele = Date.now();
+  await veriCek().catch(() => {});
+  if (imza() !== onceki) { genelCiz(); raporCiz(); duyuruCiz(); sohbetCiz(); }
+}
+setInterval(tazele, 60000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - sonTazele > 30000) tazele(); });
 
 /* ---------- sekmeler ---------- */
 document.querySelector('.sekme-cubuk').onclick = e => {
@@ -253,8 +267,8 @@ function beklenen(e) {
 function gunFark(t) { const n = Math.round((new Date(bugun()) - new Date(t)) / 864e5); return n === 0 ? 'bugün' : n === 1 ? 'dün' : n + ' gün önce'; }
 
 /* ---------- raporlar ---------- */
-for (const id of ['rEkip', 'rBas', 'rBit', 'rTaslak']) $(id).onchange = raporCiz;
-$('rAra').oninput = raporCiz;
+for (const id of ['rEkip', 'rBas', 'rBit', 'rTaslak']) $(id).onchange = () => { raporSayfa = 40; raporCiz(); };
+$('rAra').oninput = () => { raporSayfa = 40; raporCiz(); };
 function filtreli() {
   const f = $('rEkip').value, q = $('rAra').value.trim().toLocaleLowerCase('tr');
   const cinsi = id => ekipler.find(e => e.id === id)?.cins;
@@ -263,8 +277,10 @@ function filtreli() {
     && (!$('rBas').value || r.tarih >= $('rBas').value) && (!$('rBit').value || r.tarih <= $('rBit').value)
     && (!q || [r.tur, r.yer, r.ozet, r.ikram, ekipAd(r.ekip_id)].join(' ').toLocaleLowerCase('tr').includes(q)));
 }
+let raporSayfa = 40;
 function raporCiz() {
-  const rs = filtreli();
+  const tum = filtreli(), rs = tum.slice(0, raporSayfa);
+  $('daha').hidden = tum.length <= raporSayfa; $('daha').textContent = 'Daha fazla göster (' + (tum.length - raporSayfa) + ')';
   $('raporlar').innerHTML = rs.map(r => { const foto = r.medya.filter(m => m.t === 'foto').length, vid = r.medya.filter(m => m.t === 'video').length,
       yor = yorumlar.filter(y => y.rapor_id === r.id).length, tep = tepkiler.filter(x => x.rapor_id === r.id).length;
     return `<div class="kart rapor-kart" data-id="${r.id}"><div class="ust"><b>${esc(ekipAd(r.ekip_id))}</b>${r.durum === 'taslak' ? '<span class="rozet taslak">Taslak</span>' : `<span class="not" style="margin:0">${trTarih(r.tarih)}</span>`}</div>
@@ -272,6 +288,7 @@ function raporCiz() {
       <div class="alt">${r.durum === 'yapilmadi' ? '' : `<span>👥 ${r.katilim}</span><span>💰 ${tl(r.toplam)}</span>${foto ? `<span>📷 ${foto}</span>` : ''}${vid ? `<span>🎬 ${vid}</span>` : ''}${tep ? `<span>👏 ${tep}</span>` : ''}${yor ? `<span>💬 ${yor}</span>` : ''}`}</div></div>`; }).join('')
     || '<div class="kart bos" style="grid-column:1/-1">Bu filtreyle rapor yok.</div>';
 }
+$('daha').onclick = () => { raporSayfa += 40; raporCiz(); };
 $('raporlar').onclick = e => { const k = e.target.closest('.rapor-kart'); if (k) detay(raporlar.find(r => r.id === k.dataset.id)); };
 
 function tepkiOzet(rid) {

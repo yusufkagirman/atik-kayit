@@ -66,8 +66,22 @@ dialog::backdrop{background:rgba(15,30,20,.5);backdrop-filter:blur(3px)}
 @media (hover:hover) and (pointer:fine){.kart-menu:hover{background:var(--g50);color:var(--ink)}}
 .bicim-bar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .bicim-bar .btn{min-width:44px;padding:0 12px}
-.dy-onizleme{margin-top:8px;background:var(--g50);border-radius:12px;padding:10px 12px}
-.dy-onizleme .post-metin{margin:2px 0 0}
+.bicim-bar .btn.secili{background:var(--g700);color:#fff;box-shadow:none}
+.rt{min-height:120px;max-height:320px;overflow-y:auto;background:#fff;border-radius:13px;box-shadow:inset 0 0 0 1px var(--line2);padding:12px 14px;font:500 16px/1.5 Manrope,system-ui,sans-serif;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;-webkit-user-select:text;user-select:text}
+.rt:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--g600),0 0 0 4px rgba(31,133,86,.14)}
+.rt:empty::before{content:attr(data-ph);color:var(--ink3);pointer-events:none}
+.rt ul{margin:4px 0;padding-left:22px;white-space:normal}
+.okundu{margin:4px 0 12px;padding-top:12px;border-top:1px solid var(--line)}
+.okundu-ust{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;font-weight:700;margin-bottom:8px}
+.okundu-ust span{color:var(--ink3);font-weight:600}
+.okundu-bar{height:6px;border-radius:99px;background:#eef0ec;overflow:hidden;margin-bottom:12px}
+.okundu-bar i{display:block;height:100%;background:var(--g600);border-radius:99px;transform-origin:left;transition:transform 300ms var(--ease-out)}
+.okundu h4{margin:10px 0 6px;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3)}
+.okundu-liste{display:flex;flex-wrap:wrap;gap:6px}
+.okundu-liste span{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;line-height:1.2;min-height:28px;padding:0 10px;border-radius:999px;background:var(--alt50);color:#8a5a12}
+.okundu-liste.ok span{background:var(--g50);color:var(--g700)}
+.okundu-liste.ok span::before{content:"✓";font-weight:800}
+.okundu-tamam{font-size:13px;font-weight:600;color:var(--g700);margin:0}
 .vid-oynat{margin-bottom:10px}.vid-oynat video{width:100%;max-height:60vh;border-radius:12px;background:#000;display:block;margin-bottom:4px}
 @media (min-width:900px){
   .dc{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
@@ -141,10 +155,9 @@ dialog::backdrop{background:rgba(15,30,20,.5);backdrop-filter:blur(3px)}
     <div class="kart">
       <h2>Yeni duyuru</h2>
       <div class="alan"><label class="et" for="dyBaslik">Başlık</label><input id="dyBaslik" maxlength="120" placeholder="Örn. Cumartesi toplantısı"></div>
-      <div class="alan"><label class="et" for="dyMetin">Duyuru metni</label>
-        <div class="bicim-bar" id="dyBar"><button type="button" class="btn kucuk" data-b="*" title="Kalın" aria-label="Kalın"><b>K</b></button><button type="button" class="btn kucuk" data-b="_" title="Eğik" aria-label="Eğik"><i>E</i></button><button type="button" class="btn kucuk" data-b="~" title="Üstü çizili" aria-label="Üstü çizili"><s>Ç</s></button><button type="button" class="btn kucuk" data-l="1" title="Liste" aria-label="Liste">• Liste</button></div>
-        <textarea id="dyMetin" maxlength="4000" placeholder="Liderlere iletilecek mesaj…"></textarea>
-        <div class="dy-onizleme" id="dyOnizleme" hidden><small class="not">Liderlerde şöyle görünür</small><div class="post-metin" id="dyOnizIc"></div></div>
+      <div class="alan"><label class="et" id="dyMetinEt">Duyuru metni</label>
+        <div class="bicim-bar" id="dyBar" role="toolbar" aria-label="Metin biçimi"><button type="button" class="btn kucuk" data-k="bold" title="Kalın (Ctrl+B)" aria-label="Kalın"><b>K</b></button><button type="button" class="btn kucuk" data-k="italic" title="Eğik (Ctrl+I)" aria-label="Eğik"><i>E</i></button><button type="button" class="btn kucuk" data-k="strikeThrough" title="Üstü çizili" aria-label="Üstü çizili"><s>Ç</s></button><button type="button" class="btn kucuk" data-k="insertUnorderedList" title="Madde listesi" aria-label="Madde listesi">• Liste</button></div>
+        <div id="dyMetin" class="rt" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="dyMetinEt" data-ph="Liderlere iletilecek mesaj…"></div>
       </div>
       <div class="alan"><label class="et">Fotoğraf <small class="not" style="font-weight:500">(en fazla 4)</small></label>
         <label class="yukle-kutu" for="dyFoto">📷 Fotoğraf ekle</label><input type="file" id="dyFoto" accept="image/*" multiple hidden>
@@ -620,16 +633,36 @@ $('dyHedef').onclick = e => {
 };
 $('dyEkipler').onclick = e => { const b = e.target.closest('.cip[data-id]'); if (!b) return; dyOzel.has(b.dataset.id) ? dyOzel.delete(b.dataset.id) : dyOzel.add(b.dataset.id); b.classList.toggle('secili'); };
 
-// Biçim çubuğu: seçili metni *kalın* / _eğik_ / ~çizili~ yapar, satırları "- " listesine çevirir. Alıcıda aynı işaretler biçimli görünür.
-$('dyMetin').oninput = () => { const v = $('dyMetin').value.trim(); $('dyOnizleme').hidden = !v; $('dyOnizIc').innerHTML = bicim(v); };
-$('dyBar').onmousedown = e => e.preventDefault();
-$('dyBar').onclick = e => {
-  const b = e.target.closest('button'); if (!b) return;
-  const ta = $('dyMetin'), s = ta.selectionStart, f = ta.selectionEnd;
-  if (b.dataset.b) ta.setRangeText(b.dataset.b + (ta.value.slice(s, f) || 'metin') + b.dataset.b, s, f, 'select');
-  else { const ls = ta.value.lastIndexOf('\n', s - 1) + 1; ta.setRangeText(ta.value.slice(ls, f).split('\n').map(l => l.startsWith('- ') ? l : '- ' + l).join('\n'), ls, f, 'end'); }
-  ta.focus(); ta.dispatchEvent(new Event('input'));
+// Duyuru metni: yazarken biçim işareti görünmez (kalın/eğik/çizili/liste doğrudan uygulanır); yayında *kalın* _eğik_ ~çizili~ "- " işaretli düz metne çevrilir.
+const rt = $('dyMetin');
+const sar = (s, k) => s.split('\n').map(l => { const m = l.match(/^(\s*)([\s\S]*?)(\s*)$/); return m[2] ? m[1] + k + m[2] + k + m[3] : l; }).join('\n');
+function rtMetin(n) {
+  let s = '';
+  for (const c of n.childNodes) {
+    if (c.nodeType === 3) { s += c.nodeValue.replace(/ /g, ' '); continue; }
+    if (c.nodeType !== 1) continue;
+    const t = c.tagName;
+    if (t === 'BR') s += '\n';
+    else if (t === 'UL' || t === 'OL') s += (s && !s.endsWith('\n') ? '\n' : '') + [...c.children].map(li => '- ' + rtMetin(li).trim()).join('\n') + '\n';
+    else if (t === 'DIV' || t === 'P') s += (s && !s.endsWith('\n') ? '\n' : '') + rtMetin(c);
+    else { const i = rtMetin(c); s += /^(B|STRONG)$/.test(t) ? sar(i, '*') : /^(I|EM)$/.test(t) ? sar(i, '_') : /^(S|STRIKE|DEL)$/.test(t) ? sar(i, '~') : i; }
+  }
+  return s;
+}
+const dyMetinAl = () => rtMetin(rt).replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+const dyDurum = () => document.querySelectorAll('#dyBar [data-k]').forEach(b => b.classList.toggle('secili', rt.contains(getSelection().anchorNode) && document.queryCommandState(b.dataset.k)));
+$('dyBar').onmousedown = e => e.preventDefault();   // seçim ve odak yazı alanında kalır
+$('dyBar').onclick = e => { const b = e.target.closest('button[data-k]'); if (!b) return; rt.focus();
+  const s = getSelection(); let n = -1;
+  if (s.rangeCount && s.isCollapsed && rt.contains(s.anchorNode) && s.anchorNode !== rt) { const r = s.getRangeAt(0).cloneRange(); r.selectNodeContents(rt); r.setEnd(s.anchorNode, s.anchorOffset); n = r.toString().length; }
+  document.execCommand(b.dataset.k);
+  if (n >= 0) { const w = document.createTreeWalker(rt, NodeFilter.SHOW_TEXT); for (let t; t = w.nextNode();) { if (n <= t.length) { getSelection().collapse(t, n); break; } n -= t.length; } }   // Chrome liste komutundan sonra imleci satır başına atıyor
+  dyDurum();
 };
+rt.oninput = () => { if (!rt.textContent.trim() && !rt.querySelector('li')) rt.innerHTML = ''; };
+rt.onpaste = e => { e.preventDefault(); document.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text/plain')); };   // dışarıdan gelen stil/HTML girmez
+document.addEventListener('selectionchange', () => { if (!$('v-duyuru').hidden) dyDurum(); });
+try { document.execCommand('styleWithCSS', false, false); } catch {}
 
 const dyFotoCiz = () => { $('dyFotolar').innerHTML = dyFoto.map((m, i) => m.u ? `<div style="background-image:url(${m.u})"><button type="button" data-i="${i}" aria-label="Fotoğrafı kaldır">×</button></div>` : '<div>Yükleniyor…</div>').join(''); };
 $('dyFoto').onchange = async e => {
@@ -649,8 +682,9 @@ $('dyFoto').onchange = async e => {
 $('dyFotolar').onclick = e => { const b = e.target.closest('button'); if (!b) return; const [m] = dyFoto.splice(+b.dataset.i, 1); kovaSil([m.yol], 'duyuru-medya'); dyFotoCiz(); };
 
 $('dyYayinla').onclick = async () => {
-  const baslik = $('dyBaslik').value.trim(), metin = $('dyMetin').value.trim(), sec = $('dyHedef').querySelector('.secili').dataset.h;
+  const baslik = $('dyBaslik').value.trim(), metin = dyMetinAl(), sec = $('dyHedef').querySelector('.secili').dataset.h;
   if (!baslik) return bildir('Duyuru başlığı gerekli.', 1);
+  if (metin.length > 4000) return bildir('Duyuru metni en fazla 4000 karakter olabilir.', 1);
   if (dyFoto.some(m => !m.u)) return bildir('Fotoğraflar yükleniyor, bitince tekrar deneyin.', 1);
   let hedef = [];
   if (sec === 'ozel') { hedef = [...dyOzel]; if (!hedef.length) return bildir('En az bir ekip seçin ya da başka bir hedef seçin.', 1); }
@@ -658,12 +692,19 @@ $('dyYayinla').onclick = async () => {
   $('dyYayinla').disabled = true;
   try {
     const [d] = await api('duyuru', {method: 'POST', headers: {Prefer: 'return=representation'}, body: JSON.stringify({baslik, metin, hedef, foto: dyFoto.map(m => m.yol)})});
-    duyurular.unshift(d); $('dyBaslik').value = $('dyMetin').value = ''; dyOzel.clear(); dyFoto = []; dyFotoCiz(); $('dyOnizleme').hidden = true; $('dyEkipler').hidden = true; $('dyHedefNot').textContent = '';
+    duyurular.unshift(d); $('dyBaslik').value = ''; rt.innerHTML = ''; dyDurum(); dyOzel.clear(); dyFoto = []; dyFotoCiz(); $('dyEkipler').hidden = true; $('dyHedefNot').textContent = '';
     for (const c of $('dyHedef').children) c.classList.toggle('secili', c.dataset.h === 'hepsi');
     duyuruCiz(); bildir('Duyuru yayınlandı');
   } catch (er) { bildir(er.message, 1); }
   $('dyYayinla').disabled = false;
 };
+function okunduHtml(hedefler, okumayan) {
+  const n = hedefler.length, o = n - okumayan.length, oy = new Set(okumayan.map(e => e.id)), okuyan = hedefler.filter(e => !oy.has(e.id));
+  if (!n) return '';
+  return `<div class="okundu"><div class="okundu-ust"><b>Okunma</b><span>${o} / ${n} lider</span></div><div class="okundu-bar"><i style="transform:scaleX(${o / n})"></i></div>
+    ${okumayan.length ? `<h4>Okumadı (${okumayan.length})</h4><div class="okundu-liste">${okumayan.map(e => `<span>${esc(e.ad)}</span>`).join('')}</div>` : '<p class="okundu-tamam">✓ Tüm liderler okudu</p>'}
+    ${okuyan.length ? `<h4>Okudu (${okuyan.length})</h4><div class="okundu-liste ok">${okuyan.map(e => `<span>${esc(e.ad)}</span>`).join('')}</div>` : ''}</div>`;
+}
 function duyuruCiz() {
   const aktifler = ekipler.filter(e => e.aktif), ayni = (a, b) => a.length === b.length && a.every(x => b.includes(x));
   $('duyurular').innerHTML = duyurular.map(d => {
@@ -675,7 +716,7 @@ function duyuruCiz() {
       <div style="margin-bottom:8px"><span class="rozet${d.hedef.length ? '' : ' gri'}">${etiket}</span></div>
       ${d.metin ? `<div class="post-metin" style="margin:0 0 10px;color:var(--ink2)">${bicim(d.metin)}</div>` : ''}
       ${d.foto?.length ? `<div class="duyuru-foto n${d.foto.length}" style="margin-bottom:10px">${d.foto.map(y => `<a href="${dyUrl(y)}" target="_blank" rel="noopener noreferrer"><img src="${dyUrl(y)}" loading="lazy" decoding="async" alt="Duyuru fotoğrafı"></a>`).join('')}</div>` : ''}
-      <div class="not" style="margin:0 0 8px"><b>${hedefler.length - okumayan.length}/${hedefler.length}</b> lider okudu${okumayan.length ? ' · Okumayan: ' + okumayan.map(e => esc(e.ad)).join(', ') : ''}</div>
+      ${okunduHtml(hedefler, okumayan)}
       <div style="text-align:right"><button class="btn kucuk sil" data-sil="${d.id}">Duyuruyu sil</button></div></div>`;
   }).join('') || '<div class="kart bos" style="grid-column:1/-1">Henüz duyuru yok.</div>';
 }

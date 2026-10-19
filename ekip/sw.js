@@ -1,5 +1,5 @@
 // ETS service worker: kabuk önbelleği + web push. Supabase çağrıları (başka kaynak) hiç önbelleğe girmez.
-const V = 'ets-v4';
+const V = 'ets-v5';
 const KABUK = ['fontlar/manrope-latin.woff2', 'fontlar/manrope-latin-ext.woff2', 'stil.css', 'config.js', 'onay.js', 'ortak.js', 'form.js', 'pwa.js', 'logo.png', 'icon-192.png'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(KABUK)).then(() => self.skipWaiting())); });
@@ -8,9 +8,9 @@ self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(k => Pro
 self.addEventListener('fetch', e => {
   const r = e.request, u = new URL(r.url);
   if (r.method !== 'GET' || u.origin !== location.origin) return;
-  // Sayfa: önce ağ (hep güncel), çevrimdışıysa önbellek. Sorgu (token) yok sayılır.
+  // Sayfa: önce ağ (HTTP önbelleğini atlayıp sunucuya sorar, hep güncel), çevrimdışıysa önbellek. Sorgu (token) yok sayılır.
   if (r.mode === 'navigate') {
-    e.respondWith(fetch(r).then(res => { const k = res.clone(); caches.open(V).then(c => c.put(u.pathname, k)); return res; }).catch(() => caches.match(u.pathname)));
+    e.respondWith(fetch(u.href, {cache: 'no-cache'}).then(res => { const k = res.clone(); caches.open(V).then(c => c.put(u.pathname, k)); return res; }).catch(() => caches.match(u.pathname)));
     return;
   }
   // Varlıklar: önbellekten hemen ver, arkada tazele (sürüm ?v= parametresi ayrı kayıt olur).

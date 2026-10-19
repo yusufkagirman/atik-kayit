@@ -15,7 +15,17 @@
   l.href = URL.createObjectURL(new Blob([JSON.stringify(man)], {type: 'application/manifest+json'}));
   document.head.append(l);
 
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    const eski = navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').then(k => document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && k.update().catch(() => {}))).catch(() => {});
+    // Yeni sürüm devraldığında açık sayfa eski kalır: yenileme önerisi (yazılan taslak kaybolmasın diye kendiliğinden yenilenmez)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!eski || document.querySelector('.kurulum.yeni')) return;
+      const b = document.createElement('div'); b.className = 'kurulum yeni';
+      b.innerHTML = '<img src="icon-192.png" alt=""><p>Yeni sürüm hazır.</p><button type="button" class="btn ana">Yenile</button>';
+      b.querySelector('.btn').onclick = () => location.reload(); document.body.append(b);
+    });
+  }
 
   // Rozet: okunmamış sayısı (sayfalar window.rozet(n) çağırır; desteklenmeyen yerde sessizce geçer).
   window.rozet = n => { try { n > 0 ? navigator.setAppBadge?.(n) : navigator.clearAppBadge?.(); } catch {} };

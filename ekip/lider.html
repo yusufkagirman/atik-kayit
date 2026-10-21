@@ -34,6 +34,7 @@
 
   <!-- ANA -->
   <section id="ana" hidden>
+    <div id="kadro" class="not" hidden></div>
     <div id="pushYer"></div>
     <div class="sayilar kadro">
       <div class="sayi"><b id="sFaal">0</b><span>Bu ay faaliyet</span></div>
@@ -123,7 +124,7 @@ async function yukle() {
   if (!TOKEN) return hataGoster('Bağlantı eksik. Lütfen yönetimin gönderdiği kişisel bağlantıyı kullanınız.');
   try { V = await rpc('lider_bilgi', {t: TOKEN}); } catch (e) { return hataGoster(e.message); }
   $('ekipAd').textContent = V.ekip.ad;
-  $('selam').textContent = selam(); $('selam').hidden = false;
+  kadroCiz();
   $('gunlerYazi').textContent = V.ekip.gunler.length ? '· ' + V.ekip.gunler.map(g => GUN[g]).join(', ') : '';
   anaCiz();
   sohbetSayi();
@@ -135,11 +136,27 @@ async function yukle() {
 }
 function hataGoster(m) { $('hata').hidden = false; $('hataMetin').textContent = m; $('ekipAd').textContent = 'ATİK ETS'; }
 
+// Ana lider + yardımcılar: "Giriş yapan" seçimi cihazda saklanır (yardımcı yoksa hiçbir şey görünmez)
+const kadroAd = () => [V.ekip.lider_ad, ...(V.ekip.yardimci || [])].filter(Boolean);
+function girisAd() {
+  let s = ''; try { s = localStorage.getItem('ets-giris-' + V.ekip.id) || ''; } catch {}
+  return kadroAd().includes(s) ? s : V.ekip.lider_ad;
+}
+function kadroCiz() {
+  const y = V.ekip.yardimci || [];
+  $('kadro').hidden = !y.length;
+  if (y.length) {
+    $('kadro').innerHTML = `Lider: <b>${esc(V.ekip.lider_ad)}</b> · Yardımcı: ${esc(y.join(', '))}<br><label>Giriş yapan: <select id="girisSec">${kadroAd().map(a => `<option${a === girisAd() ? ' selected' : ''}>${esc(a)}</option>`).join('')}</select></label>`;
+    $('girisSec').onchange = e => { try { localStorage.setItem('ets-giris-' + V.ekip.id, e.target.value); } catch {} kadroCiz(); };
+  }
+  $('selam').textContent = selam(); $('selam').hidden = false;
+}
+
 // Kurumsal hitap: saat dilimine göre selam + "liderim" (ad yoksa yalnız "liderim")
 function selam() {
   const s = new Date().getHours();
   const z = s < 5 ? 'Hayırlı geceler' : s < 12 ? 'Hayırlı sabahlar' : s < 18 ? 'İyi günler' : s < 22 ? 'Hayırlı akşamlar' : 'Hayırlı geceler';
-  const ilk = (V.ekip.lider_ad || '').trim().split(/\s+/)[0].toLocaleLowerCase('tr');
+  const ilk = (girisAd() || '').trim().split(/\s+/)[0].toLocaleLowerCase('tr');
   const ad = ilk ? ilk.charAt(0).toLocaleUpperCase('tr') + ilk.slice(1) + ' ' : '';
   return `${z} ${ad}liderim, hoş geldiniz.`;
 }
@@ -319,8 +336,8 @@ $('kisiAra').oninput = async () => {
   if (!q) { $('kisiSonuc').hidden = true; return; }
   if (!KISILER) { try { KISILER = await rpc('lider_kisiler', {t: TOKEN}) || []; } catch (er) { return bildir(er.message, 1); } }
   if (norm($('kisiAra').value.trim()) !== q) return;
-  const liste = [{id: 'yonetim', ad: 'Yönetim', lider_ad: 'Yönetim ekibi'}, ...KISILER].filter(k => norm(k.ad + ' ' + k.lider_ad).includes(q)).slice(0, 8);
-  $('kisiSonuc').innerHTML = liste.map(k => `<div class="liste-oge kisi-oge" data-id="${esc(k.id)}" role="button" tabindex="0"><span class="avatar kucuk">${esc(k.ad.charAt(0))}</span><div class="govde"><b>${esc(k.ad)}</b><span>${esc(k.lider_ad || '')}</span></div></div>`).join('') || '<div class="not" style="padding:8px 4px">Eşleşen kişi yok.</div>';
+  const liste = [{id: 'yonetim', ad: 'Yönetim', lider_ad: 'Yönetim ekibi'}, ...KISILER].filter(k => norm(k.ad + ' ' + k.lider_ad + ' ' + (k.yardimci || []).join(' ')).includes(q)).slice(0, 8);
+  $('kisiSonuc').innerHTML = liste.map(k => `<div class="liste-oge kisi-oge" data-id="${esc(k.id)}" role="button" tabindex="0"><span class="avatar kucuk">${esc(k.ad.charAt(0))}</span><div class="govde"><b>${esc(k.ad)}</b><span>${esc([k.lider_ad, k.yardimci?.length ? 'Yardımcı: ' + k.yardimci.join(', ') : ''].filter(Boolean).join(' · '))}</span></div></div>`).join('') || '<div class="not" style="padding:8px 4px">Eşleşen kişi yok.</div>';
   $('kisiSonuc').hidden = false;
 };
 $('kisiSonuc').onclick = e => { const o = e.target.closest('.kisi-oge'); if (!o) return; $('kisiAra').value = ''; $('kisiSonuc').hidden = true; kanalAc('dm:' + o.dataset.id); };

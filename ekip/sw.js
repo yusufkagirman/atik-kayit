@@ -1,5 +1,5 @@
 // ETS service worker: kabuk önbelleği + web push. Supabase çağrıları (başka kaynak) hiç önbelleğe girmez.
-const V = 'ets-v5';
+const V = 'ets-v6';
 const KABUK = ['fontlar/manrope-latin.woff2', 'fontlar/manrope-latin-ext.woff2', 'stil.css', 'config.js', 'onay.js', 'ortak.js', 'form.js', 'pwa.js', 'logo.png', 'icon-192.png'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(KABUK)).then(() => self.skipWaiting())); });

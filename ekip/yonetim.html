@@ -294,7 +294,7 @@ function genelCiz() {
   const gec = e => !son[e.id] || son[e.id] < beklenen(e);
   const geciken = ek.filter(gec);
   $('uyariKart').hidden = !geciken.length;
-  $('uyari').innerHTML = geciken.map(e => `<span class="rozet kirmizi" title="${esc(e.lider_ad)}">${esc(e.ad)} · ${son[e.id] ? gunFark(son[e.id]) : 'hiç rapor yok'}</span>`).join('');
+  $('uyari').innerHTML = geciken.map(e => `<span class="rozet kirmizi" title="${esc(e.lider_ad)}${e.yardimci?.length ? ' · Yardımcı: ' + esc(e.yardimci.join(', ')) : ''}">${esc(e.ad)} · ${son[e.id] ? gunFark(son[e.id]) : 'hiç rapor yok'}</span>`).join('');
 
   // son 8 hafta (pazartesi başlangıçlı)
   const pzt = new Date(); pzt.setDate(pzt.getDate() - (pzt.getDay() + 6) % 7);
@@ -305,7 +305,7 @@ function genelCiz() {
 
   const satir = ek.map(e => { const r = rs.filter(x => x.ekip_id === e.id), k = r.reduce((a, x) => a + x.katilim, 0), h = r.reduce((a, x) => a + Number(x.toplam), 0); return {e, n: r.length, k, h, ort: r.length ? k / r.length : 0}; }).sort((a, b) => b.k - a.k);
   const mxo = Math.max(1, ...satir.map(s => s.ort));
-  $('perf').innerHTML = satir.map(s => `<tr><td><b>${esc(s.e.ad)}</b><div class="not" style="margin:0">${esc(s.e.lider_ad || 'lider adı yok')}${s.e.gunler.length ? ' · ' + s.e.gunler.map(g => GUN[g]).join(', ') : ''}</div></td>
+  $('perf').innerHTML = satir.map(s => `<tr><td><b>${esc(s.e.ad)}</b><div class="not" style="margin:0">${esc(s.e.lider_ad || 'lider adı yok')}${s.e.yardimci?.length ? ' · Yardımcı: ' + esc(s.e.yardimci.join(', ')) : ''}${s.e.gunler.length ? ' · ' + s.e.gunler.map(g => GUN[g]).join(', ') : ''}</div></td>
     <td class="s">${s.n}</td><td class="s">${s.k}</td><td><div style="display:flex;align-items:center;gap:8px"><div class="cubuk" style="flex:1"><i style="width:${s.ort / mxo * 100}%"></i></div><b>${s.ort.toFixed(1)}</b></div></td>
     <td class="s">${tl(s.h)}</td><td class="s">${s.k ? tl(s.h / s.k) : '-'}</td>
     <td>${son[s.e.id] ? `<span class="rozet${gec(s.e) ? ' kirmizi' : ''}">${gunFark(son[s.e.id])}</span>` : '<span class="rozet gri">yok</span>'}</td></tr>`).join('');
@@ -483,7 +483,7 @@ function ekipCiz() {
     // ad, grup, lider kayıt panelinden gelir (kaynak_id); burada yalnız günler ve link
     return `<div class="kart ekip-kart" data-id="${e.id}" style="${e.aktif ? '' : 'opacity:.6'}">
       <h2 style="margin:0 0 2px">${esc(e.ad)} <small>${e.cins === 'kiz' ? 'Kız' : 'Erkek'}${e.aktif ? '' : ' · pasif'}</small></h2>
-      <p class="not" style="margin:0 0 12px">Lider: <b>${esc(e.lider_ad || 'girilmemiş')}</b>${e.lider_tel ? ' · ' + esc(e.lider_tel) : ''}</p>
+      <p class="not" style="margin:0 0 12px">Lider: <b>${esc(e.lider_ad || 'girilmemiş')}</b>${e.lider_tel ? ' · ' + esc(e.lider_tel) : ''}${e.yardimci?.length ? '<br>Yardımcı: ' + esc(e.yardimci.join(', ')) : ''}</p>
       <div class="alan"><label class="et">Rutin faaliyet günü <span class="not" style="font-weight:500">(haftada bir; ekstra faaliyetler için gün seçilmez)</span></label><div class="cipler gunler">${GUN.slice(1).map((g, i) => `<button type="button" class="cip${e.gunler.includes(i + 1) ? ' secili' : ''}" data-g="${i + 1}">${g}</button>`).join('')}</div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="not" style="margin:0">${n} üye · ${raporlar.filter(r => r.ekip_id === e.id && r.durum === 'gonderildi').length} rapor</span>
         <div style="display:flex;gap:6px">${e.kaynak_id ? '' : `<button class="btn kucuk" data-a="aktif">${e.aktif ? 'Pasifleştir' : 'Aktifleştir'}</button>`}<button class="btn kucuk ana" data-a="kaydet">Günü kaydet</button></div></div>
@@ -504,7 +504,7 @@ $('ekipler').onclick = async ev => {
       if (e.aktif && !await onayla(e.ad + ' pasifleşsin mi? Lider linki çalışmaz, raporları durur.', 'Pasifleştir')) return;
       await guncelle({aktif: !e.aktif});
     } else if (a === 'kopya') { await navigator.clipboard.writeText(link); bildir('Link kopyalandı'); }
-    else if (a === 'wa') open('https://wa.me/' + (/^0\d{10}$/.test(e.lider_tel) ? '9' + e.lider_tel : '') + '?text=' + encodeURIComponent(`Hayırlı günler${e.lider_ad ? ' ' + e.lider_ad.trim().split(/\s+/)[0] : ''} liderim, ${e.ad} için ATİK ETS (Ekip Takip Sistemi) bağlantınız (size özeldir, lütfen paylaşmayınız):\n${link}\n\nTelefonunuzun ana ekranına ekleyebilirsiniz.`), '_blank');
+    else if (a === 'wa') open('https://wa.me/' + (/^0\d{10}$/.test(e.lider_tel) ? '9' + e.lider_tel : '') + '?text=' + encodeURIComponent(`Hayırlı günler${e.lider_ad ? ' ' + e.lider_ad.trim().split(/\s+/)[0] : ''} liderim, ${e.ad} için ATİK ETS (Ekip Takip Sistemi) bağlantınız (ekibinize özeldir${e.yardimci && e.yardimci.length ? ", yalnız yardımcı liderleriniz " + e.yardimci.join(", ") + " ile paylaşınız" : ", lütfen paylaşmayınız"}):\n${link}\n\nTelefonunuzun ana ekranına ekleyebilirsiniz.`), '_blank');
     else if (a === 'yeni') { if (await onayla('Eski link hemen geçersiz olur. Yeni link üretilsin mi?', 'Yeni link üret', false)) { await guncelle({token: yeniToken()}); bildir('Yeni link hazır, lidere gönder'); } }
   } catch (er) { bildir(er.message, 1); }
 };
@@ -584,8 +584,8 @@ function sohbetGoster() {
 $('yKisiAra').oninput = () => {
   const q = $('yKisiAra').value.trim().toLocaleLowerCase('tr');
   if (!q) { $('yKisiSonuc').hidden = true; return; }
-  const liste = ekipler.filter(e => e.aktif && (e.ad + ' ' + (e.lider_ad || '')).toLocaleLowerCase('tr').includes(q)).slice(0, 8);
-  $('yKisiSonuc').innerHTML = liste.map(e => `<div class="liste-oge kisi-oge" data-id="${e.id}" role="button" tabindex="0"><span class="avatar kucuk">${esc(e.ad.charAt(0))}</span><div class="govde"><b>${esc(e.ad)}</b><span>${esc(e.lider_ad || '')}</span></div></div>`).join('') || '<div class="not" style="padding:8px 4px">Eşleşen lider yok.</div>';
+  const liste = ekipler.filter(e => e.aktif && (e.ad + ' ' + (e.lider_ad || '') + ' ' + (e.yardimci || []).join(' ')).toLocaleLowerCase('tr').includes(q)).slice(0, 8);
+  $('yKisiSonuc').innerHTML = liste.map(e => `<div class="liste-oge kisi-oge" data-id="${e.id}" role="button" tabindex="0"><span class="avatar kucuk">${esc(e.ad.charAt(0))}</span><div class="govde"><b>${esc(e.ad)}</b><span>${esc([e.lider_ad, e.yardimci?.length ? 'Yardımcı: ' + e.yardimci.join(', ') : ''].filter(Boolean).join(' · '))}</span></div></div>`).join('') || '<div class="not" style="padding:8px 4px">Eşleşen lider yok.</div>';
   $('yKisiSonuc').hidden = false;
 };
 $('yKisiSonuc').onclick = e => { const o = e.target.closest('.kisi-oge'); if (!o) return; $('yKisiAra').value = ''; $('yKisiSonuc').hidden = true; yKanalAc('dm:' + ['yonetim', o.dataset.id].sort().join('|')); };

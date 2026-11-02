@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f3f27">
+<title>ATİK · Ekip Kayıtları</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://xudogjlcrlwumpmpzpcd.supabase.co" crossorigin>
+<script src="config.js?v=1"></script>
+<style>
+@font-face{font-family:Manrope;src:url(fontlar/manrope-latin.woff2) format("woff2");font-weight:200 800;font-display:swap}
+:root{--yesil:#0f3f27;--zemin:#f4f6f3;--kart:#fff;--yazi:#16221b;--soluk:#5d6b62;--cizgi:#e1e7e2;--uyari:#b4541a;--uyari-bg:#fdf0e6;--tamam:#1d7a4a}
+@media(prefers-color-scheme:dark){:root{--zemin:#0e1511;--kart:#17201a;--yazi:#e8efe9;--soluk:#93a498;--cizgi:#26332b;--uyari:#f0a36d;--uyari-bg:#33231a;--tamam:#5cc48c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--zemin);color:var(--yazi);font:15px/1.45 Manrope,system-ui,sans-serif}
+header{background:var(--yesil);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 16px;display:flex;gap:12px;align-items:center}
+header img{width:40px;height:40px;border-radius:10px;background:#fff;padding:3px}
+header small{opacity:.75;display:block;font-size:12px}
+header b{font-size:18px}
+main{max-width:720px;margin:0 auto;padding:16px}
+.sayilar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.sayi{background:var(--kart);border-radius:14px;padding:12px;text-align:center;box-shadow:0 0 0 1px var(--cizgi)}
+.sayi b{display:block;font-size:24px}
+.sayi span{font-size:12px;color:var(--soluk)}
+.ara{display:flex;gap:8px;margin-bottom:14px}
+.ara input{flex:1;min-width:0;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--cizgi);background:var(--kart);color:var(--yazi)}
+.ara button{font:inherit;border:1px solid var(--cizgi);background:var(--kart);color:var(--yazi);border-radius:12px;padding:0 14px;min-height:44px;cursor:pointer}
+.ara button[aria-pressed=true]{background:var(--yesil);color:#fff;border-color:var(--yesil)}
+.kisi{background:var(--kart);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 0 0 1px var(--cizgi)}
+.kisi h3{margin:0 0 2px;font-size:16px;overflow-wrap:anywhere}
+.alt{color:var(--soluk);font-size:13px;overflow-wrap:anywhere}
+.satir{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid var(--cizgi);font-size:14px}
+.satir:first-of-type{margin-top:10px}
+.satir span:first-child{color:var(--soluk);flex:none}
+.satir span:last-child{text-align:right;overflow-wrap:anywhere}
+a{color:inherit;font-weight:600}
+.cip{display:inline-block;margin:8px 6px 0 0;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:700;background:var(--uyari-bg);color:var(--uyari)}
+.tam{margin-top:8px;font-size:12px;font-weight:700;color:var(--tamam)}
+.bos,.hata{text-align:center;color:var(--soluk);padding:36px 12px}
+.hata{color:var(--uyari)}
+footer{text-align:center;color:var(--soluk);font-size:12px;padding:6px 16px 28px}
+</style>
+</head>
+<body>
+<header><img src="logo.png" alt="ATİK"><div><small>ATİK · Ekip Kayıtları</small><b id="ekipAd">Yükleniyor…</b></div></header>
+<main>
+  <div id="hata" class="hata" hidden></div>
+  <div id="icerik" hidden>
+    <div class="sayilar">
+      <div class="sayi"><b id="sToplam">0</b><span>Kayıtlı</span></div>
+      <div class="sayi"><b id="sTam">0</b><span>Tam</span></div>
+      <div class="sayi"><b id="sEksik">0</b><span>Eksik</span></div>
+    </div>
+    <div class="ara">
+      <input id="ara" type="search" placeholder="Ad, okul, telefon ara" autocomplete="off">
+      <button id="eksikBtn" type="button" aria-pressed="false">Eksikler</button>
+    </div>
+    <div id="liste"></div>
+  </div>
+</main>
+<footer>Bilgiler kayıt panelinden otomatik gelir. Düzeltme için kayıt panelini kullanın.</footer>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const tel = n => n ? `<a href="tel:${esc(String(n).replace(/[^\d+]/g, ""))}">${esc(n)}</a>` : "";
+let kisiler = [], sadeceEksik = false;
+
+function satir(e, d) { return d ? `<div class="satir"><span>${e}</span><span>${d}</span></div>` : ""; }
+
+function ciz() {
+  const q = $("ara").value.trim().toLocaleLowerCase("tr");
+  const l = kisiler.filter(k => (!sadeceEksik || k.eksik.length) &&
+    (!q || [k.ad, k.okul, k.sinif, k.baba_ad, k.anne_ad, k.baba_tel, k.anne_tel, k.ogr_tel].join(" ").toLocaleLowerCase("tr").includes(q)));
+  $("liste").innerHTML = l.length ? l.map(k => `<article class="kisi">
+    <h3>${esc(k.ad)}</h3>
+    <div class="alt">${esc([k.sinif && k.sinif + ". sınıf", k.okul].filter(Boolean).join(" · "))}</div>
+    ${satir("TC", esc(k.tc))}${satir("Doğum", esc(k.dogum))}
+    ${satir("Baba", [esc(k.baba_ad), tel(k.baba_tel)].filter(Boolean).join(" · "))}
+    ${satir("Anne", [esc(k.anne_ad), tel(k.anne_tel)].filter(Boolean).join(" · "))}
+    ${satir("Öğrenci tel", tel(k.ogr_tel))}${satir("Muvafakat", esc(k.muvafakat))}
+    ${k.eksik.length ? k.eksik.map(e => `<span class="cip">${esc(e)} eksik</span>`).join("") : '<div class="tam">✓ Kayıt tam</div>'}
+  </article>`).join("") : '<div class="bos">Sonuç yok</div>';
+}
+
+async function yukle() {
+  const t = new URLSearchParams(location.search).get("k");
+  const hata = m => { $("ekipAd").textContent = "ATİK"; $("hata").hidden = false; $("hata").textContent = m; };
+  if (!t) return hata("Bu sayfa size özel linkle açılır. Linkinizi yöneticiden isteyin.");
+  try {
+    const r = await fetch(`${CFG.URL}/rest/v1/rpc/kayit_gor`, {
+      method: "POST",
+      headers: { apikey: CFG.ANON, Authorization: "Bearer " + CFG.ANON, "Content-Type": "application/json" },
+      body: JSON.stringify({ t })
+    });
+    if (!r.ok) return hata(r.status === 400 || r.status === 401 || r.status === 403 ? "Link geçersiz ya da yenilenmiş. Yöneticiden yeni link isteyin." : "Yüklenemedi, biraz sonra tekrar deneyin.");
+    const d = await r.json();
+    kisiler = d.kisiler;
+    $("ekipAd").textContent = d.ekip;
+    $("sToplam").textContent = kisiler.length;
+    $("sEksik").textContent = kisiler.filter(k => k.eksik.length).length;
+    $("sTam").textContent = kisiler.length - $("sEksik").textContent;
+    $("icerik").hidden = false;
+    ciz();
+  } catch { hata("Bağlantı kurulamadı. İnterneti kontrol edip yenileyin."); }
+}
+$("ara").oninput = ciz;
+$("eksikBtn").onclick = e => { sadeceEksik = !sadeceEksik; e.currentTarget.setAttribute("aria-pressed", sadeceEksik); ciz(); };
+yukle();
+</script>
+</body>
+</html>
